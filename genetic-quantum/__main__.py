@@ -3,7 +3,7 @@
 
 ################################################################################
 #                                                                              #
-#  NSGA-II: Non-dominated Sorting Genetic Algorithm II                         #
+#  Genetic quantum                                                             #
 #                                                                              #
 #  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
 #                                                                              #
@@ -14,7 +14,7 @@
 
 '''Class'''
 
-from sample.nsga2 import NSGA2 # pylint: disable=import-error
+from nsga2.nsga2 import NSGA2 # pylint: disable=import-error
 
 def run():
     '''Method responsible for calling the NSGA-II.'''
