@@ -66,6 +66,10 @@ class NSGA2:
 
             self.crowding_distance_sorting()
 
+            self.population._show_population()
+            print("")
+            input()
+
             self.crossover()
 
             self.mutation()

@@ -20,7 +20,7 @@ import random
 from .individual import Individual
 
 class Population:
-    '''Class of population, used by NSGA-II.'''
+    '''Class of population of indiviuals, used by NSGA-II.'''
 
     # Attributes
 

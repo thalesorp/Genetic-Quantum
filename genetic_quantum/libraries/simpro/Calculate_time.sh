@@ -4,7 +4,7 @@ COMPUTING_TIMES=10
 
 LAST_ROW=$(($COMPUTING_TIMES + 2))
 
-QUANTUM=10000
+QUANTUM=5
 
 SCENARIO_FILES=(../../resources/scenarios/probabilistic/probabilistic_scenario_1.txt ../../resources/scenarios/probabilistic/probabilistic_scenario_2.txt ../../resources/scenarios/probabilistic/probabilistic_scenario_3.txt ../../resources/scenarios/probabilistic/probabilistic_scenario_4.txt ../../resources/scenarios/probabilistic/probabilistic_scenario_5.txt ../../resources/scenarios/probabilistic/probabilistic_scenario_6.txt)
 #SCENARIO_FILES=$(for i in $(seq 6) ; do echo -n "../../resources/scenarios/probabilistic/probabilistic_scenario_1$i.txt " ; done)

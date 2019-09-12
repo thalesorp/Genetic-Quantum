@@ -447,7 +447,17 @@ class Evento(object):
         #Cria a pasta com o nome do arquivo
         nomeCenario = str(self.arquivo)
         pasta = 'Resultados ' + nomeCenario[9:-4]
+
         import os
+
+        #-----
+        path=os.getcwd()
+        directories_up = 3
+        for _ in range(directories_up):
+            path=path[:path.rfind('/')]
+        pasta=path+"/resources/results"
+        #-----
+
         if not os.path.exists(pasta):
             os.makedirs(pasta)
         ########

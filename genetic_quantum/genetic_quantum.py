@@ -14,7 +14,7 @@
 
 '''Root class of this project.'''
 
-from lib.nsga2.nsga2 import NSGA2 # pylint: disable=import-error
+from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error
 
 class Genetic_quantum(NSGA2):
 
