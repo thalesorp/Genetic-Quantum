@@ -70,6 +70,14 @@ class NSGA2:
 
             self.mutation()
 
+            self.population._show_population()
+            print("")
+
+            self.population.organize_for_new_generation()
+
+            self.population._show_population()
+            print("")
+
             self._plot_individuals_fronts()
 
             input()
@@ -231,7 +239,24 @@ class NSGA2:
 
     def crossover(self):
         ''' '''
-        pass
+        population_current_size = self.population.get_current_population_size()
+
+        individual_remaining = self.POPULATION_SIZE - population_current_size
+
+        # Creating new individuals from two random individuals.
+        for _ in range(individual_remaining):
+
+            parent_one = self.population.get_random_individual()
+            parent_two = self.population.get_random_individual()
+
+            if (random.random() % 2) == 0:
+                x_value = parent_one.x_value
+                y_value = parent_two.y_value
+            else:
+                x_value = parent_two.x_value
+                y_value = parent_one.y_value
+
+            self.population.new_individual(x_value, y_value)
 
     def mutation(self):
         ''' '''

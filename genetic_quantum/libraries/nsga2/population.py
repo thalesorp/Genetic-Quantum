@@ -37,6 +37,8 @@ class Population:
         self.y_min_value = y_min_value
         self.y_max_value = y_max_value
 
+        #self.current_size = None
+
         random.seed(3)
 
         self.individuals = list()
@@ -71,12 +73,41 @@ class Population:
         for front in self.fronts:
             front.sort(key=lambda x: x.crowding_distance, reverse=True)
 
+    def get_current_population_size(self):
+        amount = 0
+        for front in self.fronts:
+            amount += len(front)
+        return amount
+
+    def get_random_individual(self):
+        population_current_size = self.get_current_population_size()
+        counter = random.randint(1, population_current_size-1)
+
+        for front in self.fronts:
+            for individual in front:
+                if counter == 0:
+                    return individual
+                counter -= 1
+
+    def new_individual(self, x_value, y_value):
+        new_individual = Individual("A", x_value, y_value)
+        self.individuals.append(new_individual)
+
+    def organize_for_new_generation(self):
+        ''' Putting all individuals sorted in fronts to individuals list.'''
+        for front in self.fronts:
+            for individual in front:
+                self.individuals.append(individual)
+                front.remove(individual)
+        self.front = list()
+        print("Front:", self.front)
+
     # Utils
     def _show_population(self):
         '''Show the x and y values of each individual of population.'''
-        print("i(x,y)")
         for individual in self.individuals:
-            print(individual)
+            sys.stdout.write(str(individual) + ", ")
+            #print(individual)
 
     def _show_general_domination_info(self):
         '''Show all data of population.'''

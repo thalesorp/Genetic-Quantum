@@ -12,16 +12,16 @@
 #                                                                              #
 ################################################################################
 
-'''Class'''
+'''Root class of this project.'''
 
 from lib.nsga2.nsga2 import NSGA2 # pylint: disable=import-error
 
 class Genetic_quantum(NSGA2):
 
     def __init__(self):
-        self.foo = None
+        # Calling the parent constructor.
+        NSGA2.__init__(self)
 
     def run(self):
         '''Method responsible for calling the NSGA-II.'''
-        my_nsga2 = NSGA2()
-        my_nsga2.run()
+        super(Genetic_quantum, self).run()

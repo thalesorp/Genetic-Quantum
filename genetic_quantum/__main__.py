@@ -12,9 +12,7 @@
 #                                                                              #
 ################################################################################
 
-'''Class'''
-
-import sys
+'''Main.'''
 
 from genetic_quantum import Genetic_quantum # pylint: disable=no-name-in-module
 
