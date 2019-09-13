@@ -17,23 +17,23 @@
 import sys
 import random
 
-from .population import Population
-
 import matplotlib.pyplot as plt
 import numpy as np
+
+from .population import Population
 
 class NSGA2:
     '''Main class of the NSGA-II algorithm.'''
 
     # Attributes
-    POPULATION_SIZE = 10
-    OFFSPRING_SIZE = 5
+    POPULATION_SIZE = 100
+    OFFSPRING_SIZE = 50
 
     X_MIN_VALUE = 0
-    X_MAX_VALUE = 10
+    X_MAX_VALUE = 100
 
     Y_MIN_VALUE = 0
-    Y_MAX_VALUE = 10
+    Y_MAX_VALUE = 100
 
     GENERATIONS = 10
 
@@ -56,45 +56,55 @@ class NSGA2:
         Sort them with: non-dominated sorting.
         Take the best individual according with: crowding distance sorting.
         'POPULATION_SIZE' is the max size of the new population.
-        Back to beginning. Repeated N generations.'''
+        Back to beginning. Repeated N generations.''' # pylint: disable=pointless-string-statement
 
         self.population.start_new_population()
 
-        for _ in range(self.GENERATIONS):
+        self._plot_individuals()
+
+        for gen in range(self.GENERATIONS):
+
+            print("GENERATION:", gen+1)
+
+            '''print("\n-> BEFORE NON DOMINATED SORTING:")
+            self.population._show_fronts()
+            self.population._show_individuals()'''
 
             self.non_dominated_sorting()
 
+            '''print("\n-> BEFORE CROWDING DISTANCE SORTING:")
+            self.population._show_fronts()
+            self.population._show_individuals()'''
+
             self.crowding_distance_sorting()
 
-            self.population._show_population()
-            print("")
-            input()
+            '''print("\n-> BEFORE CROSSOVER:")
+            self.population._show_fronts()
+            self.population._show_individuals()'''
 
             self.crossover()
 
             self.mutation()
 
-            self.population._show_population()
-            print("")
-
-            self.population.organize_for_new_generation()
-
-            self.population._show_population()
-            print("")
+            '''print("\n-> BEFORE START NEW GENERATION:")
+            self.population._show_fronts()
+            self.population._show_individuals()'''
 
             self._plot_individuals_fronts()
 
             input()
 
-    def non_dominated_sorting(self):
+    def non_dominated_sorting(self): #OK.
         '''Sort the individuals according to they dominance and sort them into fronts.'''
 
         ''' Everyone check with everyone who dominates who, filling up
         "domination_count" and "dominated_by" attributes of each individual.
         Also, the first front is created.
-        Then the remaining individuals are divided into fronts.'''
+        Then the remaining individuals are divided into fronts.''' # pylint: disable=pointless-string-statement
 
-        self.population.fronts.append([])
+        self.population.reset_fronts()
+
+        self.population.new_front()
 
         # Each of individuals checks if dominates or is dominated with everyone else.
         for i in range(self.POPULATION_SIZE):
@@ -109,31 +119,32 @@ class NSGA2:
                     elif other_individual.dominates(current_individual):
                         current_individual.domination_count += 1
 
+            current_front = self.population.get_last_front()
             # Checking if current individual is eligible to the first front.
             if current_individual.domination_count == 0:
-                if current_individual not in self.population.fronts[0]:
-                    self.population.fronts[0].append(current_individual)
+                if current_individual not in current_front:
+                    self.population.add_to_last_front(current_individual)
 
         # Temporary list with the current front.
         current_front = list()
 
         i = 0
         while len(self.population.fronts[i]) > 0: # pylint: disable=len-as-condition
-            current_front = list()
+            self.population.new_front()
             for individual in self.population.fronts[i]:
                 for dominated_individual in individual.dominated_by:
                     dominated_individual.domination_count -= 1
                     ''' Now if this dominated individual aren't dominated by anyone,
                     insert into next front.'''
                     if dominated_individual.domination_count == 0:
-                        current_front.append(dominated_individual)
-            self.population.fronts.append(current_front)
+                        self.population.add_to_last_front(dominated_individual)
+            #self.population.fronts.append(current_front)
             i += 1
 
-        # Deleting empty last position created in previously loops.
-        del self.population.fronts[len(self.population.fronts)-1]
+        # Deleting empty last front created in previously loops.
+        self.population.delete_last_front()
 
-    def crowding_distance_sorting(self):
+    def crowding_distance_sorting(self): #OK.
         '''Crowding distance sorting algorithm.'''
 
         ''' Reject the fronts that doesn't fit in the population of next generation.
@@ -141,27 +152,28 @@ class NSGA2:
         Sort them in they front with this value.
         Discard the individuals that doesn't fit on new population.'''
 
-        ''' Rejecting the fronts that doesn't fit in the population for next generation.'''
+        # Rejecting the fronts that doesn't fit in the population for next generation.
 
         individual_quantity = 0
-        exceeded_front_index = 0
-        i = 0
-        while exceeded_front_index == 0:
-            # Checking if the quantity of individuals exceeded the limit, wich is OFFSPRING_SIZE.
-            if individual_quantity >= self.OFFSPRING_SIZE:
-                exceeded_front_index = i
-            else:
-                individual_quantity += len(self.population.fronts[i])
-            i += 1
-
-        # Actually deleting the fronts that exceed.
-        del self.population.fronts[exceeded_front_index : len(self.population.fronts)]
-
-
-        ''' Calculating the crowding distance value for each individual.'''
+        quantity_of_fronts = 0
 
         for front in self.population.fronts:
+            # Checking if the quantity of individuals exceeded the limit, wich is OFFSPRING_SIZE.
+            if individual_quantity >= self.OFFSPRING_SIZE:
+                quantity_of_fronts += 1
+            else:
+                individual_quantity += len(front)
 
+        #print("\n")
+        #print("\tInside crowding distance sorting...")
+        while quantity_of_fronts != 0:
+            #print("\t  Deleting the last front...")
+            self.population.delete_last_front()
+            quantity_of_fronts -= 1
+        #print("\n")
+
+        # Calculating the crowding distance value for each individual.
+        for front in self.population.fronts:
             # Temporary lists that holds the x and y values of current front.
             x_values = list()
             y_values = list()
@@ -216,19 +228,12 @@ class NSGA2:
                                                 / (max_y_value - min_y_value))
 
 
-        ''' Sorting the individuals with crowding distance value.'''
-
         self.population.sort_fronts_by_crowding_distance()
 
-        # Getting the front that will have individuals removed.
-        last_front = self.population.fronts[len(self.population.fronts)-1]
 
+        # Getting the amount of individuals to delete, and removing them.
 
-        ''' Getting the amount of individuals that are gonna be removed and removing them.'''
-
-        amount_to_remove = 0
-
-        # Getting the amount of individuals from all fronts but the last.
+        # Getting the sum of individuals from all fronts but the last.
         individual_counter = 0
         for i in range(0, len(self.population.fronts)-1):
             individual_counter += len(self.population.fronts[i])
@@ -236,10 +241,23 @@ class NSGA2:
         # Quantity of individuals of last front that will continue to next generation.
         remaining_individuals = self.population.offspring_size - individual_counter
 
+        # Getting the front that will have individuals removed.
+        last_front = self.population.get_last_front()
+
+        # Getting the amount of individuals that are gonna be removed.
         amount_to_remove = len(last_front) - remaining_individuals
 
-        # Deleting the last "amount_to_remove" individuals.
-        del last_front[ len(last_front) - amount_to_remove :]
+        #print("\n")
+        #print("\tInside crowding distance sorting...")
+        #print("\tAmount to remove:", amount_to_remove)
+
+        # Deleting the last "amount_to_remove" individuals from last front.
+        while amount_to_remove != 0:
+            individual = last_front[len(last_front)-1]
+            self.population.delete_individual_from_last_front(individual)
+            #print("\tindivitual removed:", individual)
+            amount_to_remove -= 1
+        #print("\n")
 
     def crossover(self):
         ''' '''
@@ -267,6 +285,41 @@ class NSGA2:
         pass
 
     # Plotting
+    def _plot_individuals(self):
+        multiple_x_values = list()
+        multiple_y_values = list()
+        x_values = list()
+        y_values = list()
+
+        for individual in self.population.individuals:
+            x_values.append(individual.x_value)
+            y_values.append(individual.y_value)
+
+        #colors = ['go','ro','bo', 'mo', 'yo', 'co', 'no', 'ko']
+        #colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo']
+        #labels = ['Front 1', 'Front 2', 'Front 3', 'Front 4', 'Front 5', 'Front 6', 'Front 7', 'Front 8', 'Front 9', 'Front 10', 'Front 11', 'Front 12', 'Front 13', 'Front 14', 'Front 15', 'Front 16', 'Front 17', 'Front 18', 'Front 19', 'Front 20', 'Front 21', 'Front 22', 'Front 23', 'Front 24', 'Front 25', 'Front 26', 'Front 27', 'Front 28', 'Front 29', 'Front 30']
+
+        ax = plt.subplot(111)
+
+        #i = 0
+        #for i in range(len(multiple_x_values)):
+        plt.plot(x_values, y_values, "ko", label="individuals")
+
+        #plt.plot(self.x_values, self.y_values, 'ro')
+        #plt.plot(self.x_values, self.y_values, 'ro')
+
+        plt.axis([self.X_MIN_VALUE, self.X_MAX_VALUE, self.Y_MIN_VALUE, self.Y_MAX_VALUE])
+        plt.xticks(np.arange(self.X_MIN_VALUE, self.X_MAX_VALUE+1, 1.0))
+        plt.yticks(np.arange(self.Y_MIN_VALUE, self.Y_MAX_VALUE+1, 1.0))
+
+        plt.title('Individual fronts')
+        chartBox = ax.get_position()
+        ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
+        ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
+
+        #plt.legend(loc='upper left')
+        plt.show()
+
     def _plot_individuals_fronts(self):
         multiple_x_values = list()
         multiple_y_values = list()

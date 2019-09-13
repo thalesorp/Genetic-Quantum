@@ -43,7 +43,7 @@ class Population:
 
         self.individuals = list()
 
-        # List with all fronts.
+        # List with all fronts. Each front contains the indexes of the individuals in "self.individuals".
         self.fronts = list()
 
         self.offspring = list()
@@ -71,6 +71,7 @@ class Population:
     def sort_fronts_by_crowding_distance(self):
         '''Sort the current fronts by the crowding distance value in ascending order.'''
         for front in self.fronts:
+            #front.sort(key=lambda x: self.get_individual(x).crowding_distance, reverse=True)
             front.sort(key=lambda x: x.crowding_distance, reverse=True)
 
     def get_current_population_size(self):
@@ -102,12 +103,81 @@ class Population:
         self.front = list()
         print("Front:", self.front)
 
+    # Front utils
+    def new_front(self):
+        self.fronts.append([])
+
+    def reset_fronts(self):
+        self.fronts = list()
+
+    def add_to_front(self, index, individual):
+        self.fronts[index].append(individual)
+
+    def add_to_last_front(self, individual):
+        #index = self.individuals.index(individual)
+        #self.fronts[self.get_last_front_index()].append(index)
+        self.fronts[self.get_last_front_index()].append(individual)
+
+    def get_last_front(self):
+        return self.fronts[len(self.fronts)-1]
+
+    def get_last_front_index(self):
+        return len(self.fronts)-1
+
+    def get_individual_index(self, individual):
+        return self.individuals.index(individual)
+
+    def get_individual(self, index):
+        return self.individuals[index]
+
+    def delete_individual(self, front_index, individual_index):
+        ''' Deletes the individual from front AND from individuals list.'''
+
+        print("\nDeleting individual.")
+        for i in range(0, len(self.individuals)):
+            print("index:", i)
+
+        print("\nIndex to remove:", individual_index)
+
+        del self.individuals[individual_index]
+        self.fronts[front_index].remove(individual_index)
+        # Adjusting the index value of each individual.
+
+        for i in range(individual_index, len(self.individuals)):
+            print("index:", i)
+        print("\n")
+
+    def delete_individual_from_last_front(self, individual):
+        ''' Deletes the individual from front AND from individuals list.'''
+
+        # Deleting from last front the individual with index = "index".
+        last_front = self.get_last_front()
+        index = last_front.index(individual)
+        del last_front[index]
+
+        # Deletng from individuals list.
+        self.individuals.remove(individual)
+
+    def delete_last_front(self):
+        '''Deleting the last front and the individuals inside.'''
+        last_front = self.get_last_front()
+        for individual in last_front:
+            self.individuals.remove(individual)
+        self.fronts.remove(last_front)
+
     # Utils
     def _show_population(self):
         '''Show the x and y values of each individual of population.'''
         for individual in self.individuals:
             sys.stdout.write(str(individual) + ", ")
             #print(individual)
+
+    def _show_individuals(self):
+        '''Show the x and y values of each individual of population.'''
+        sys.stdout.write("INDIVIDUALS:\n  ")
+        for individual in self.individuals:
+            sys.stdout.write(str(individual) + ", ")
+        print("")
 
     def _show_general_domination_info(self):
         '''Show all data of population.'''
@@ -122,9 +192,21 @@ class Population:
 
     def _show_fronts(self):
         '''Show all fronts.'''
-        i = 1
+
+        '''i = 1
         for front in self.fronts:
             sys.stdout.write("Front " + str(i) + ": ")
+            i += 1
+            for index in front:
+                sys.stdout.write("[" + str(index) + "] " + str(self.individuals[index]) + ",  ")
+            sys.stdout.write("\n")
+        def _show_fronts(self):'''
+
+        print("FRONTS:")
+
+        i = 1
+        for front in self.fronts:
+            sys.stdout.write("  Front " + str(i) + ": ")
             i += 1
             for individual in front:
                 sys.stdout.write(str(individual) + ", ")
@@ -146,6 +228,10 @@ class Population:
         for individual in self.offspring:
             sys.stdout.write(str(individual) + ", ")
         print("")
+
+    def _show_individuals_from_list(self, individual_list):
+        for individual in individual_list:
+            sys.stdout.write(str(individual) + ', ')
 
     # Debug
     def start_new_population_debug(self):
