@@ -26,8 +26,8 @@ class NSGA2:
     '''Main class of the NSGA-II algorithm.'''
 
     # Attributes
-    POPULATION_SIZE = 100
-    OFFSPRING_SIZE = 50
+    POPULATION_SIZE = 10
+    OFFSPRING_SIZE = 5
 
     X_MIN_VALUE = 0
     X_MAX_VALUE = 100
@@ -50,7 +50,7 @@ class NSGA2:
     def run(self):
         '''Method responsible for running the main loop of NSGA2.'''
 
-        ''' Starts with one population of size 'POPULATION_SIZE'.
+        '''Starts with one population of size 'POPULATION_SIZE'.
         It's created the children of this population, that will be the quantity of 'OFFSPRING_SIZE'.
         The creation of those children is made by crossover and mutation.
         Sort them with: non-dominated sorting.
@@ -60,7 +60,9 @@ class NSGA2:
 
         self.population.start_new_population()
 
-        self._plot_individuals()
+        print("GENERATION: 0")
+        #self._plot_individuals()
+        #input()
 
         for gen in range(self.GENERATIONS):
 
@@ -72,10 +74,11 @@ class NSGA2:
 
             self.non_dominated_sorting()
 
-            '''print("\n-> BEFORE CROWDING DISTANCE SORTING:")
+            print("\n-> BEFORE CROWDING DISTANCE SORTING:")
             self.population._show_fronts()
-            self.population._show_individuals()'''
-
+            self.population._show_individuals()
+            print("")
+            print("len(self.population.fronts):", len(self.population.fronts))
             self.crowding_distance_sorting()
 
             '''print("\n-> BEFORE CROSSOVER:")
@@ -90,14 +93,14 @@ class NSGA2:
             self.population._show_fronts()
             self.population._show_individuals()'''
 
-            self._plot_individuals_fronts()
+            #self._plot_individuals_fronts()
 
             input()
 
-    def non_dominated_sorting(self): #OK.
+    def non_dominated_sorting(self):
         '''Sort the individuals according to they dominance and sort them into fronts.'''
 
-        ''' Everyone check with everyone who dominates who, filling up
+        '''Everyone check with everyone who dominates who, filling up
         "domination_count" and "dominated_by" attributes of each individual.
         Also, the first front is created.
         Then the remaining individuals are divided into fronts.''' # pylint: disable=pointless-string-statement
@@ -134,20 +137,19 @@ class NSGA2:
             for individual in self.population.fronts[i]:
                 for dominated_individual in individual.dominated_by:
                     dominated_individual.domination_count -= 1
-                    ''' Now if this dominated individual aren't dominated by anyone,
-                    insert into next front.'''
+                    # Now if this dominated individual aren't dominated by anyone,
+                        # insert into next front.
                     if dominated_individual.domination_count == 0:
                         self.population.add_to_last_front(dominated_individual)
-            #self.population.fronts.append(current_front)
             i += 1
 
         # Deleting empty last front created in previously loops.
         self.population.delete_last_front()
 
-    def crowding_distance_sorting(self): #OK.
+    def crowding_distance_sorting(self):
         '''Crowding distance sorting algorithm.'''
 
-        ''' Reject the fronts that doesn't fit in the population of next generation.
+        '''Reject the fronts that doesn't fit in the population of next generation.
         Find the crowding distance value for each individual.
         Sort them in they front with this value.
         Discard the individuals that doesn't fit on new population.'''
@@ -164,16 +166,18 @@ class NSGA2:
             else:
                 individual_quantity += len(front)
 
-        #print("\n")
-        #print("\tInside crowding distance sorting...")
+        print("Rejected fronts:", quantity_of_fronts)
+
         while quantity_of_fronts != 0:
-            #print("\t  Deleting the last front...")
             self.population.delete_last_front()
             quantity_of_fronts -= 1
-        #print("\n")
 
+        i = 1
+        print("len(self.population.fronts):", len(self.population.fronts))
         # Calculating the crowding distance value for each individual.
         for front in self.population.fronts:
+            print("Front", i)
+            i += 1
             # Temporary lists that holds the x and y values of current front.
             x_values = list()
             y_values = list()
@@ -196,36 +200,47 @@ class NSGA2:
                 y_index = y_values.index(individual.y_value)
 
                 # X:
-                # Usually, the value is as described bellow.
-                x_left_neighbour_index = x_index - 1
-                x_right_neighbour_index = x_index + 1
-                # But when isn't, then it's checked the cases when there's no neighbour on one side.
-                if x_index == 0:
-                    # When it happens, the closest neighbour it's himself.
-                    x_left_neighbour_index = 0
-                elif x_index == (len(x_values)-1):
-                    x_right_neighbour_index = (len(x_values)-1)
-                # Getting the value of neighbous, which is what matters.
-                x_value_left_neighbour = x_values[x_left_neighbour_index]
-                x_value_right_neighbour = x_values[x_right_neighbour_index]
+                # Checking if there's only one individual in that front.
+                if len(x_values) == 1:
+                    # When this happens, he's the left and right neighbour of yourself.
+                    x_value_left_neighbour = x_values[0]
+                    x_value_right_neighbour = x_values[0]
+                else:
+                    # Usually, the value is as described bellow.
+                    x_left_neighbour_index = x_index - 1
+                    x_right_neighbour_index = x_index + 1
+                    # But when isn't, then it's checked the cases when there's no neighbour on one side.
+                    if x_index == 0:
+                        # When it happens, the closest neighbour it's himself.
+                        x_left_neighbour_index = 0
+                    elif x_index == (len(x_values)-1):
+                        x_right_neighbour_index = (len(x_values)-1)
+                    # Getting the value of neighbours, which is what matters.
+                    x_value_left_neighbour = x_values[x_left_neighbour_index]
+                    x_value_right_neighbour = x_values[x_right_neighbour_index]
 
                 # Y:
-                y_top_neighbour_index = y_index + 1
-                y_bottom_neighbour_index = y_index - 1
+                if len(y_values) == 1:
+                    y_value_top_neighbour = y_values[0]
+                    y_value_bottom_neighbour = y_values[0]
+                else:
+                    y_top_neighbour_index = y_index + 1
+                    y_bottom_neighbour_index = y_index - 1
 
-                if y_index == 0:
-                    y_bottom_neighbour_index = 0
-                elif y_index == (len(y_values)-1):
-                    y_top_neighbour_index = (len(y_values)-1)
+                    if y_index == 0:
+                        y_bottom_neighbour_index = 0
+                    elif y_index == (len(y_values)-1):
+                        y_top_neighbour_index = (len(y_values)-1)
 
-                y_value_top_neighbour = y_values[y_top_neighbour_index]
-                y_value_bottom_neighbour = y_values[y_bottom_neighbour_index]
+                    y_value_top_neighbour = y_values[y_top_neighbour_index]
+                    y_value_bottom_neighbour = y_values[y_bottom_neighbour_index]
+
 
                 individual.crowding_distance += ((x_value_right_neighbour - x_value_left_neighbour)
-                                                / (max_x_value - min_x_value))
+                                                 / (max_x_value - min_x_value)) #<--- Division by zero!
 
                 individual.crowding_distance += ((y_value_top_neighbour - y_value_bottom_neighbour)
-                                                / (max_y_value - min_y_value))
+                                                 / (max_y_value - min_y_value)) #<--- Division by zero!
 
 
         self.population.sort_fronts_by_crowding_distance()
@@ -247,20 +262,14 @@ class NSGA2:
         # Getting the amount of individuals that are gonna be removed.
         amount_to_remove = len(last_front) - remaining_individuals
 
-        #print("\n")
-        #print("\tInside crowding distance sorting...")
-        #print("\tAmount to remove:", amount_to_remove)
-
         # Deleting the last "amount_to_remove" individuals from last front.
         while amount_to_remove != 0:
             individual = last_front[len(last_front)-1]
             self.population.delete_individual_from_last_front(individual)
-            #print("\tindivitual removed:", individual)
             amount_to_remove -= 1
-        #print("\n")
 
     def crossover(self):
-        ''' '''
+        '''Crossover method.'''
         population_current_size = self.population.get_current_population_size()
 
         individual_remaining = self.POPULATION_SIZE - population_current_size
@@ -281,13 +290,11 @@ class NSGA2:
             self.population.new_individual(x_value, y_value)
 
     def mutation(self):
-        ''' '''
+        '''Mutation method.'''
         pass
 
     # Plotting
     def _plot_individuals(self):
-        multiple_x_values = list()
-        multiple_y_values = list()
         x_values = list()
         y_values = list()
 
@@ -295,18 +302,9 @@ class NSGA2:
             x_values.append(individual.x_value)
             y_values.append(individual.y_value)
 
-        #colors = ['go','ro','bo', 'mo', 'yo', 'co', 'no', 'ko']
-        #colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo']
-        #labels = ['Front 1', 'Front 2', 'Front 3', 'Front 4', 'Front 5', 'Front 6', 'Front 7', 'Front 8', 'Front 9', 'Front 10', 'Front 11', 'Front 12', 'Front 13', 'Front 14', 'Front 15', 'Front 16', 'Front 17', 'Front 18', 'Front 19', 'Front 20', 'Front 21', 'Front 22', 'Front 23', 'Front 24', 'Front 25', 'Front 26', 'Front 27', 'Front 28', 'Front 29', 'Front 30']
-
         ax = plt.subplot(111)
 
-        #i = 0
-        #for i in range(len(multiple_x_values)):
         plt.plot(x_values, y_values, "ko", label="individuals")
-
-        #plt.plot(self.x_values, self.y_values, 'ro')
-        #plt.plot(self.x_values, self.y_values, 'ro')
 
         plt.axis([self.X_MIN_VALUE, self.X_MAX_VALUE, self.Y_MIN_VALUE, self.Y_MAX_VALUE])
         plt.xticks(np.arange(self.X_MIN_VALUE, self.X_MAX_VALUE+1, 1.0))
@@ -317,7 +315,6 @@ class NSGA2:
         ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
         ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 
-        #plt.legend(loc='upper left')
         plt.show()
 
     def _plot_individuals_fronts(self):
@@ -336,8 +333,19 @@ class NSGA2:
             multiple_y_values.append(y_values)
 
         #colors = ['go','ro','bo', 'mo', 'yo', 'co', 'no', 'ko']
-        colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo', 'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo']
-        labels = ['Front 1', 'Front 2', 'Front 3', 'Front 4', 'Front 5', 'Front 6', 'Front 7', 'Front 8', 'Front 9', 'Front 10', 'Front 11', 'Front 12', 'Front 13', 'Front 14', 'Front 15', 'Front 16', 'Front 17', 'Front 18', 'Front 19', 'Front 20', 'Front 21', 'Front 22', 'Front 23', 'Front 24', 'Front 25', 'Front 26', 'Front 27', 'Front 28', 'Front 29', 'Front 30']
+        colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo',
+                  'bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko', 'wo']
+        labels = ['Front 1', 'Front 2', 'Front 3', 'Front 4', 'Front 5',
+                  'Front 6', 'Front 7', 'Front 8', 'Front 9', 'Front 10',
+                  'Front 11', 'Front 12', 'Front 13', 'Front 14', 'Front 15',
+                  'Front 16', 'Front 17', 'Front 18', 'Front 19', 'Front 20',
+                  'Front 21', 'Front 22', 'Front 23', 'Front 24', 'Front 25',
+                  'Front 26', 'Front 27', 'Front 28', 'Front 29', 'Front 30']
 
         ax = plt.subplot(111)
 
