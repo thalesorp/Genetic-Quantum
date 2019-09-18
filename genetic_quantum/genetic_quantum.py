@@ -16,6 +16,7 @@
 
 from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error
 
+# Change this to "GeneticQantum".
 class Genetic_quantum(NSGA2):
 
     def __init__(self):

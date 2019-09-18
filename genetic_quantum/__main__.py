@@ -14,9 +14,10 @@
 
 '''Main.'''
 
-from genetic_quantum import Genetic_quantum # pylint: disable=no-name-in-module
+from genetic_quantum import Genetic_quantum # pylint: disable=no-name-in-module,no-absolute-import
 
 def main():
+    '''Main.'''
     genqua = Genetic_quantum()
     genqua.run()
 
