@@ -35,7 +35,7 @@ class NSGA2:
     Y_MIN_VALUE = 0
     Y_MAX_VALUE = 100
 
-    GENERATIONS = 10
+    GENERATIONS = 3
 
     # Constructor
     def __init__(self):
@@ -48,9 +48,8 @@ class NSGA2:
 
     # Methods
     def run(self):
-        '''Method responsible for running the main loop of NSGA2.'''
-
-        '''Starts with one population of size 'POPULATION_SIZE'.
+        '''Method responsible for running the main loop of NSGA2.
+        Starts with one population of size 'POPULATION_SIZE'.
         It's created the children of this population, that will be the quantity of 'OFFSPRING_SIZE'.
         The creation of those children is made by crossover and mutation.
         Sort them with: non-dominated sorting.
@@ -66,7 +65,7 @@ class NSGA2:
 
         for gen in range(self.GENERATIONS):
 
-            print("GENERATION:", gen+1)
+            print("\nGENERATION:", gen+1)
 
             '''print("\n-> BEFORE NON DOMINATED SORTING:")
             self.population._show_fronts()
@@ -78,7 +77,7 @@ class NSGA2:
             self.population._show_fronts()
             self.population._show_individuals()
             print("")
-            print("len(self.population.fronts):", len(self.population.fronts))
+            #print("len(self.population.fronts):", len(self.population.fronts))
             self.crowding_distance_sorting()
 
             '''print("\n-> BEFORE CROSSOVER:")
@@ -89,12 +88,11 @@ class NSGA2:
 
             self.mutation()
 
-            '''print("\n-> BEFORE START NEW GENERATION:")
+            print("\n-> BEFORE START NEW GENERATION:")
             self.population._show_fronts()
-            self.population._show_individuals()'''
+            self.population._show_individuals()
 
             #self._plot_individuals_fronts()
-
             input()
 
     def non_dominated_sorting(self):
@@ -159,25 +157,44 @@ class NSGA2:
         individual_quantity = 0
         quantity_of_fronts = 0
 
+        #print("individual_quantity:", individual_quantity)
+        #print("quantity_of_fronts:", quantity_of_fronts)
+
+        #i = 1
         for front in self.population.fronts:
+            #print("\nfront", i)
+            #i += 1
             # Checking if the quantity of individuals exceeded the limit, wich is OFFSPRING_SIZE.
+            #print("individual_quantity (", individual_quantity, ") >= self.OFFSPRING_SIZE (", self.OFFSPRING_SIZE, ")")
             if individual_quantity >= self.OFFSPRING_SIZE:
                 quantity_of_fronts += 1
             else:
                 individual_quantity += len(front)
+            #print("individual_quantity:", individual_quantity)
+            #print("quantity_of_fronts:", quantity_of_fronts)
 
-        print("Rejected fronts:", quantity_of_fronts)
+        #print("Rejected fronts:", quantity_of_fronts)
 
         while quantity_of_fronts != 0:
             self.population.delete_last_front()
             quantity_of_fronts -= 1
 
-        i = 1
-        print("len(self.population.fronts):", len(self.population.fronts))
+        i = 0
+        #print("len(self.population.fronts):", len(self.population.fronts))
+
         # Calculating the crowding distance value for each individual.
         for front in self.population.fronts:
-            print("Front", i)
-            i += 1
+
+            #i += 1
+            #print("Front", i)
+
+            # If there is only one individual in that front,
+            #     there's no need to calculate their crowding distance.
+            '''if len(front) == 1:
+                print("FRONT:", front)
+                print("No need to calculate crowding distance.")
+                continue'''
+
             # Temporary lists that holds the x and y values of current front.
             x_values = list()
             y_values = list()
@@ -202,9 +219,12 @@ class NSGA2:
                 # X:
                 # Checking if there's only one individual in that front.
                 if len(x_values) == 1:
+                    # If there is only one individual in that front,
+                    #     there's no need to calculate their crowding distance.
+                    continue
                     # When this happens, he's the left and right neighbour of yourself.
-                    x_value_left_neighbour = x_values[0]
-                    x_value_right_neighbour = x_values[0]
+                    #x_value_left_neighbour = x_values[0]
+                    #x_value_right_neighbour = x_values[0]
                 else:
                     # Usually, the value is as described bellow.
                     x_left_neighbour_index = x_index - 1
@@ -221,8 +241,9 @@ class NSGA2:
 
                 # Y:
                 if len(y_values) == 1:
-                    y_value_top_neighbour = y_values[0]
-                    y_value_bottom_neighbour = y_values[0]
+                    continue
+                    #y_value_top_neighbour = y_values[0]
+                    #y_value_bottom_neighbour = y_values[0]
                 else:
                     y_top_neighbour_index = y_index + 1
                     y_bottom_neighbour_index = y_index - 1
@@ -246,6 +267,10 @@ class NSGA2:
         self.population.sort_fronts_by_crowding_distance()
 
 
+        #print("\n-> DURING CROWDING DISTANCE SORTING:")
+        #self.population._show_fronts()
+
+
         # Getting the amount of individuals to delete, and removing them.
 
         # Getting the sum of individuals from all fronts but the last.
@@ -256,14 +281,24 @@ class NSGA2:
         # Quantity of individuals of last front that will continue to next generation.
         remaining_individuals = self.population.offspring_size - individual_counter
 
+        #print("self.population.offspring_size:", self.population.offspring_size)
+        #print("individual_counter:", individual_counter)
+        #print("remaining_individuals:", remaining_individuals)
+
         # Getting the front that will have individuals removed.
         last_front = self.population.get_last_front()
+
+        #print("len(last_front):", len(last_front))
 
         # Getting the amount of individuals that are gonna be removed.
         amount_to_remove = len(last_front) - remaining_individuals
 
+        #print("amount_to_remove:", amount_to_remove)
         # Deleting the last "amount_to_remove" individuals from last front.
         while amount_to_remove != 0:
+            #print("Last front:")
+            #self._show_individuals_from_list(last_front)
+            #print("len(last_front):", len(last_front))
             individual = last_front[len(last_front)-1]
             self.population.delete_individual_from_last_front(individual)
             amount_to_remove -= 1
@@ -280,13 +315,23 @@ class NSGA2:
             parent_one = self.population.get_random_individual()
             parent_two = self.population.get_random_individual()
 
-            if (random.random() % 2) == 0:
+            #print("\nparent_one:", parent_one)
+            #print("parent_two:", parent_two)
+
+            x_value = (parent_one.x_value + parent_two.x_value)//2
+            y_value = (parent_one.y_value + parent_two.y_value)//2
+
+            '''if (random.random() % 2) == 0:
                 x_value = parent_one.x_value
                 y_value = parent_two.y_value
             else:
                 x_value = parent_two.x_value
-                y_value = parent_one.y_value
+                y_value = parent_one.y_value'''
 
+            #print("\nparent_one:", parent_one)
+            #print("parent_two:", parent_two)
+            #print("child: (", x_value, ",", y_value, ")")
+            #print("new_individual: (", x_value, ",", y_value, ")")
             self.population.new_individual(x_value, y_value)
 
     def mutation(self):

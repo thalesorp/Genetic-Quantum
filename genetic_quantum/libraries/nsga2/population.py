@@ -75,14 +75,16 @@ class Population:
             front.sort(key=lambda x: x.crowding_distance, reverse=True)
 
     def get_current_population_size(self):
+        ''' Return the size of population.'''
         amount = 0
         for front in self.fronts:
             amount += len(front)
         return amount
 
     def get_random_individual(self):
+        ''' Return a random individual of this population.'''
         population_current_size = self.get_current_population_size()
-        counter = random.randint(1, population_current_size-1)
+        counter = random.randrange(1, population_current_size-1)
 
         for front in self.fronts:
             for individual in front:
@@ -91,6 +93,7 @@ class Population:
                 counter -= 1
 
     def new_individual(self, x_value, y_value):
+        ''' Insert a new individual into population.'''
         new_individual = Individual("A", x_value, y_value)
         self.individuals.append(new_individual)
 
@@ -105,29 +108,37 @@ class Population:
 
     # Front utils
     def new_front(self):
+        ''' Start a new front.'''
         self.fronts.append([])
 
     def reset_fronts(self):
+        ''' Reset all fronts, i. e., delete all previous fronts.'''
         self.fronts = list()
 
     def add_to_front(self, index, individual):
+        ''' Add the individual into "index" front.'''
         self.fronts[index].append(individual)
 
     def add_to_last_front(self, individual):
+        ''' Add individual to last front.'''
         #index = self.individuals.index(individual)
         #self.fronts[self.get_last_front_index()].append(index)
         self.fronts[self.get_last_front_index()].append(individual)
 
     def get_last_front(self):
+        ''' Return the last front.'''
         return self.fronts[len(self.fronts)-1]
 
     def get_last_front_index(self):
+        ''' Retun the index of last front.'''
         return len(self.fronts)-1
 
     def get_individual_index(self, individual):
+        ''' Get the index of the individual.'''
         return self.individuals.index(individual)
 
     def get_individual(self, index):
+        ''' Return one individual with "index" = index.'''
         return self.individuals[index]
 
     def delete_individual(self, front_index, individual_index):
