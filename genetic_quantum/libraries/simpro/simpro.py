@@ -10,20 +10,36 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Escalonador import *
-from Eventos import *
-from Fel import *
+#from Escalonador import *
+from .escalonador import Escalonador
+#from Eventos import *
+from .eventos import Evento
+from .fel import Fel
+
+#from .population import Population
 
 import sys
 import argparse
 
-#import cProfile
+class SimPro(object):
 
-#def main():
-    #cProfile.run(statement='run()', filename='saida-v3.cprof')
+    def run(quantum, cenario, modo):
+        escalonador = RR(quantum)
+
+        fel = Fel(escalonador, cenario, modo)
+
+        if modo == 'D':
+            while len(fel.getFel()) > 0:
+                fel.consome()
+
+        elif modo == 'P':
+            while fel.getTempo() < fel.eventos.tempoSimulacao:
+                fel.consome()
+
+        fel.fimExecucao()
 
 
-def main():
+'''def main():
     # Método de escalonamento ("FCFS", "RR"...).
     escalonador = None
     # Arquivo de cenario ("cenarioD1.txt").
@@ -32,35 +48,21 @@ def main():
     modo = None
     # Valor de quantum do escaloador Round Robin.
     quantum = None
-
     parser = argparse.ArgumentParser()
     parser.add_argument('escalonador', metavar='scheduler', type=str, help='método de escalonamento')
     parser.add_argument('quantum', metavar='quantum', type=int, help='valor de quantum')
     parser.add_argument('arquivo', metavar='file', type=str, help='arquivo contendo o cenário')
     parser.add_argument('modo', metavar='mode', type=str, help='modo probabilístico ou determinístico')
     args = vars(parser.parse_args())
-
     escalonador = RR(args['quantum'])
     cenario = args['arquivo']
     modo = args['modo']
+    run(escalonador, cenario, modo)'''
 
-    run(escalonador, cenario, modo)
+#import cProfile
 
+#def main():
+    #cProfile.run(statement='run()', filename='saida-v3.cprof')
 
-def run(escalonador, cenario, modo):
-
-    fel = Fel(escalonador, cenario, modo)
-
-    if modo == 'D':
-        while len(fel.getFel()) > 0:
-            fel.consome()
-
-    elif modo == 'P':
-        while fel.getTempo() < fel.eventos.tempoSimulacao:
-            fel.consome()
-
-    fel.fimExecucao()
-
-
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()

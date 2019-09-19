@@ -10,7 +10,7 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Fila import *
+from .fila import Fila
 
 class Dispositivo(object):
 

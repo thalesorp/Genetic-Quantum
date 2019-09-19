@@ -10,7 +10,7 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Eventos import *
+from .eventos import Evento
 import sys
 
 class Fel(object):

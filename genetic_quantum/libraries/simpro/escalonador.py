@@ -10,7 +10,8 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Fila import *
+#from Fila import *
+from .fila import Fila
 
 import numpy as np
 import skfuzzy as fuzz

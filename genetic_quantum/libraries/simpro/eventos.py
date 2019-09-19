@@ -10,13 +10,15 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Colecoes import *
-from Fila import *
-import random
-from Escalonador import *
-from Load import *
 from math import *
-from Plot import *
+
+from .colecoes import Colecoes
+from .fila import Fila
+import random
+#from .escalonador import Escalonador, PRTY, FCFS, RR, SJF, SRT, FPCS, IFCS, PFCS
+from .escalonador import *
+from .load import Cenario
+from .plot import Plot
 
 #from numba import jit
 #import warnings
@@ -24,7 +26,7 @@ from Plot import *
 
 class Evento(object):
 
-    def __init__(self,escalonador,arquivo,modelo):
+    def __init__(self, escalonador, arquivo, modelo):
         #carrega cenario
         self.cenario = Cenario()
         self.arquivo = arquivo

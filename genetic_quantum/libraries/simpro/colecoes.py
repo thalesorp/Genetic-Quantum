@@ -10,14 +10,13 @@
 #                                                      #
 #------------------------------------------------------#
 
-from Fila import *
-from Load import *
-from math import * 
-from Cpu import *
-from Dispositivo import *
-from Processo import *
-import random
+from math import *
 
+from .fila import Fila
+from .load import Cenario
+from .cpu import CPU
+from .dispositivo import Dispositivo
+from .processo import Processo
 
 class Colecoes(object):
     CPUs = []
