@@ -16,13 +16,17 @@
 
 from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error
 
-# Change this to "GeneticQantum".
-class Genetic_quantum(NSGA2):
+class GeneticQantum(NSGA2):
+    ''' Main class of this project.'''
+
+    GENERATIONS = 5
+    POPULATION_SIZE = 20
+    OFFSPRING_SIZE = 10
 
     def __init__(self):
         # Calling the parent constructor.
-        NSGA2.__init__(self)
+        super().__init__(self.GENERATIONS, self.POPULATION_SIZE, self.OFFSPRING_SIZE)
 
     def run(self):
         '''Method responsible for calling the NSGA-II.'''
-        super(Genetic_quantum, self).run()
+        super().run()

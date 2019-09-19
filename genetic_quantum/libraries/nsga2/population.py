@@ -19,67 +19,50 @@ import random
 
 from .individual import Individual
 
-class Population:
+class Population(object):
     '''Class of population of indiviuals, used by NSGA-II.'''
 
-    # Attributes
-
     # Constructor
-    def __init__(
-            self, population_size, offspring_size,
-            x_min_value, x_max_value,
-            y_min_value, y_max_value):
+    def __init__(self, population_size, offspring_size):
+        random.seed(1)
 
         self.population_size = population_size
         self.offspring_size = offspring_size
-        self.x_min_value = x_min_value
-        self.x_max_value = x_max_value
-        self.y_min_value = y_min_value
-        self.y_max_value = y_max_value
 
-        #self.current_size = None
-
-        random.seed(3)
+        self.chromosome_min_value = 0
+        self.chromosome_max_value = 100
 
         self.individuals = list()
 
-        # List with all fronts. Each front contains the indexes of the individuals in "self.individuals".
+        # List with all fronts: each front contains the indexes of the individuals in "self.individuals".
         self.fronts = list()
 
-        self.offspring = list()
-
-        # Used to plot the individuals.
-        #self.x_values = list()
-        #self.y_values = list()
-
     # Methods
-    def start_new_population(self):
-        '''Initialize a new population.'''
+    def initiate(self):
+        ''' Initialize a new population.'''
+        for _ in range(self.population_size):
+            chromosome = random.randrange(self.chromosome_min_value, self.chromosome_max_value)
+            self.new_individual(chromosome)
 
-        names = 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    def new_individual(self, chromosome):
+        ''' Insert a new individual into population.'''
+        self.individuals.append(Individual(chromosome))
 
-        for i in range(self.population_size):
-            x_value = random.randint(self.x_min_value, self.x_max_value)
-            #self.x_values.append(x_value)
+    # Front utils
+    def reset_fronts(self):
+        ''' Reset all fronts, i. e., delete all previous fronts.'''
+        self.fronts = list()
 
-            y_value = random.randint(self.y_min_value, self.y_max_value)
-            #self.y_values.append(y_value)
-
-            new_individual = Individual(names[i], x_value, y_value)
-            self.individuals.append(new_individual)
+    def new_front(self):
+        ''' Start a new front.'''
+        self.fronts.append([])
 
     def sort_fronts_by_crowding_distance(self):
         '''Sort the current fronts by the crowding distance value in ascending order.'''
         for front in self.fronts:
-            #front.sort(key=lambda x: self.get_individual(x).crowding_distance, reverse=True)
             front.sort(key=lambda x: x.crowding_distance, reverse=True)
 
-    def get_current_population_size(self):
-        ''' Return the size of population.'''
-        amount = 0
-        for front in self.fronts:
-            amount += len(front)
-        return amount
+    #^ Ok.
 
     def get_random_individual(self):
         ''' Return a random individual of this population.'''
@@ -91,29 +74,6 @@ class Population:
                 if counter == 0:
                     return individual
                 counter -= 1
-
-    def new_individual(self, x_value, y_value):
-        ''' Insert a new individual into population.'''
-        new_individual = Individual("A", x_value, y_value)
-        self.individuals.append(new_individual)
-
-    def organize_for_new_generation(self):
-        ''' Putting all individuals sorted in fronts to individuals list.'''
-        for front in self.fronts:
-            for individual in front:
-                self.individuals.append(individual)
-                front.remove(individual)
-        self.front = list()
-        print("Front:", self.front)
-
-    # Front utils
-    def new_front(self):
-        ''' Start a new front.'''
-        self.fronts.append([])
-
-    def reset_fronts(self):
-        ''' Reset all fronts, i. e., delete all previous fronts.'''
-        self.fronts = list()
 
     def add_to_front(self, index, individual):
         ''' Add the individual into "index" front.'''
@@ -128,35 +88,6 @@ class Population:
     def get_last_front(self):
         ''' Return the last front.'''
         return self.fronts[len(self.fronts)-1]
-
-    def get_last_front_index(self):
-        ''' Retun the index of last front.'''
-        return len(self.fronts)-1
-
-    def get_individual_index(self, individual):
-        ''' Get the index of the individual.'''
-        return self.individuals.index(individual)
-
-    def get_individual(self, index):
-        ''' Return one individual with "index" = index.'''
-        return self.individuals[index]
-
-    def delete_individual(self, front_index, individual_index):
-        ''' Deletes the individual from front AND from individuals list.'''
-
-        print("\nDeleting individual.")
-        for i in range(0, len(self.individuals)):
-            print("index:", i)
-
-        print("\nIndex to remove:", individual_index)
-
-        del self.individuals[individual_index]
-        self.fronts[front_index].remove(individual_index)
-        # Adjusting the index value of each individual.
-
-        for i in range(individual_index, len(self.individuals)):
-            print("index:", i)
-        print("\n")
 
     def delete_individual_from_last_front(self, individual):
         ''' Deletes the individual from front AND from individuals list.'''
@@ -203,16 +134,6 @@ class Population:
 
     def _show_fronts(self):
         '''Show all fronts.'''
-
-        '''i = 1
-        for front in self.fronts:
-            sys.stdout.write("Front " + str(i) + ": ")
-            i += 1
-            for index in front:
-                sys.stdout.write("[" + str(index) + "] " + str(self.individuals[index]) + ",  ")
-            sys.stdout.write("\n")
-        def _show_fronts(self):'''
-
         print("FRONTS:")
 
         i = 1

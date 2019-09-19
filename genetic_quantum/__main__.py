@@ -14,11 +14,11 @@
 
 '''Main.'''
 
-from genetic_quantum import Genetic_quantum # pylint: disable=no-name-in-module,no-absolute-import
+from genetic_quantum import GeneticQantum # pylint: disable=no-name-in-module,no-absolute-import
 
 def main():
     '''Main.'''
-    genqua = Genetic_quantum()
+    genqua = GeneticQantum()
     genqua.run()
 
 if __name__ == '__main__':

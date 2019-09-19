@@ -14,14 +14,14 @@
 
 '''File of individual class.'''
 
-class Individual:
-    '''Class of individuals of the population of NSGA-II.'''
+class Individual(object):
+    '''Individuals calss of the population in NSGA-II.'''
 
     # Constructor
-    def __init__(self, name, x_value, y_value):
-        self.name = name
-        self.x_value = x_value
-        self.y_value = y_value
+    def __init__(self, chromosome):
+
+        # The actual value of current individual.
+        self.chromosome = chromosome
 
         self.crowding_distance = 0
 
@@ -32,10 +32,10 @@ class Individual:
         self.dominated_by = list()
 
     def __str__(self):
-        return self.name + "(" + str(self.x_value) + "," + str(self.y_value) + ")"
+        return "(" + str(self.chromosome) + ")"
 
     # Methods
-    def dominates(self, individual):
+    def dominates(self, individual): # <--- !
         '''Function that tells if the actual individual dominates another.'''
 
         '''A(x1, y1) dominates B(x2, y2) when:

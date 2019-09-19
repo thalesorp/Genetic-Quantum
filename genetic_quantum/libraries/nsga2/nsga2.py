@@ -15,94 +15,55 @@
 '''Main class of NSGA-II.'''
 
 import sys
-import random
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .population import Population
 
-class NSGA2:
+class NSGA2(object):
     '''Main class of the NSGA-II algorithm.'''
 
-    # Attributes
-    POPULATION_SIZE = 10
-    OFFSPRING_SIZE = 5
+    def __init__(self, generations, population_size, offspring_size):
+        self.GENERATIONS = generations
+        self.POPULATION_SIZE = population_size
+        self.OFFSPRING_SIZE = offspring_size
 
-    X_MIN_VALUE = 0
-    X_MAX_VALUE = 100
-
-    Y_MIN_VALUE = 0
-    Y_MAX_VALUE = 100
-
-    GENERATIONS = 3
-
-    # Constructor
-    def __init__(self):
-        random.seed(3)
-
-        self.population = Population(
-            self.POPULATION_SIZE, self.OFFSPRING_SIZE,
-            self.X_MIN_VALUE, self.X_MAX_VALUE,
-            self.Y_MIN_VALUE, self.Y_MAX_VALUE)
+        self.population = Population(self.POPULATION_SIZE, self.OFFSPRING_SIZE)
 
     # Methods
     def run(self):
         '''Method responsible for running the main loop of NSGA2.
-        Starts with one population of size 'POPULATION_SIZE'.
-        It's created the children of this population, that will be the quantity of 'OFFSPRING_SIZE'.
+
+        Starts with one population of size "POPULATION_SIZE".
+        It's created the children of this population, that will be the quantity of "OFFSPRING_SIZE".
         The creation of those children is made by crossover and mutation.
         Sort them with: non-dominated sorting.
         Take the best individual according with: crowding distance sorting.
-        'POPULATION_SIZE' is the max size of the new population.
+        "POPULATION_SIZE" is the max size of the new population.
         Back to beginning. Repeated N generations.''' # pylint: disable=pointless-string-statement
 
-        self.population.start_new_population()
+        self.population.initiate()
 
-        print("GENERATION: 0")
-        #self._plot_individuals()
-        #input()
+        for generation in range(self.GENERATIONS):
 
-        for gen in range(self.GENERATIONS):
-
-            print("\nGENERATION:", gen+1)
-
-            '''print("\n-> BEFORE NON DOMINATED SORTING:")
-            self.population._show_fronts()
-            self.population._show_individuals()'''
+            print("GENERATION:", generation+1)
 
             self.non_dominated_sorting()
 
-            print("\n-> BEFORE CROWDING DISTANCE SORTING:")
-            self.population._show_fronts()
-            self.population._show_individuals()
-            print("")
-            #print("len(self.population.fronts):", len(self.population.fronts))
             self.crowding_distance_sorting()
-
-            '''print("\n-> BEFORE CROSSOVER:")
-            self.population._show_fronts()
-            self.population._show_individuals()'''
 
             self.crossover()
 
             self.mutation()
 
-            print("\n-> BEFORE START NEW GENERATION:")
-            self.population._show_fronts()
-            self.population._show_individuals()
-
-            #self._plot_individuals_fronts()
-            input()
-
     def non_dominated_sorting(self):
-        '''Sort the individuals according to they dominance and sort them into fronts.'''
-
-        '''Everyone check with everyone who dominates who, filling up
+        ''' Sort the individuals according to they dominance and sort them into fronts.
+        
+        Everyone check with everyone who dominates who, filling up
         "domination_count" and "dominated_by" attributes of each individual.
         Also, the first front is created.
-        Then the remaining individuals are divided into fronts.''' # pylint: disable=pointless-string-statement
-
+        Then the remaining individuals are divided into fronts.'''
         self.population.reset_fronts()
 
         self.population.new_front()
@@ -145,48 +106,29 @@ class NSGA2:
         self.population.delete_last_front()
 
     def crowding_distance_sorting(self):
-        '''Crowding distance sorting algorithm.'''
-
-        '''Reject the fronts that doesn't fit in the population of next generation.
+        ''' Crowding distance sorting algorithm.
+        Reject the fronts that doesn't fit in the population of next generation.
         Find the crowding distance value for each individual.
         Sort them in they front with this value.
         Discard the individuals that doesn't fit on new population.'''
 
         # Rejecting the fronts that doesn't fit in the population for next generation.
-
         individual_quantity = 0
         quantity_of_fronts = 0
 
-        #print("individual_quantity:", individual_quantity)
-        #print("quantity_of_fronts:", quantity_of_fronts)
-
-        #i = 1
         for front in self.population.fronts:
-            #print("\nfront", i)
-            #i += 1
             # Checking if the quantity of individuals exceeded the limit, wich is OFFSPRING_SIZE.
-            #print("individual_quantity (", individual_quantity, ") >= self.OFFSPRING_SIZE (", self.OFFSPRING_SIZE, ")")
             if individual_quantity >= self.OFFSPRING_SIZE:
                 quantity_of_fronts += 1
             else:
                 individual_quantity += len(front)
-            #print("individual_quantity:", individual_quantity)
-            #print("quantity_of_fronts:", quantity_of_fronts)
-
-        #print("Rejected fronts:", quantity_of_fronts)
 
         while quantity_of_fronts != 0:
             self.population.delete_last_front()
             quantity_of_fronts -= 1
 
-        i = 0
-        #print("len(self.population.fronts):", len(self.population.fronts))
-
         # Calculating the crowding distance value for each individual.
         for front in self.population.fronts:
-
-            #i += 1
-            #print("Front", i)
 
             # If there is only one individual in that front,
             #     there's no need to calculate their crowding distance.
@@ -195,6 +137,7 @@ class NSGA2:
                 print("No need to calculate crowding distance.")
                 continue'''
 
+            #                                                                   <---------- !
             # Temporary lists that holds the x and y values of current front.
             x_values = list()
             y_values = list()
@@ -263,13 +206,7 @@ class NSGA2:
                 individual.crowding_distance += ((y_value_top_neighbour - y_value_bottom_neighbour)
                                                  / (max_y_value - min_y_value)) #<--- Division by zero!
 
-
         self.population.sort_fronts_by_crowding_distance()
-
-
-        #print("\n-> DURING CROWDING DISTANCE SORTING:")
-        #self.population._show_fronts()
-
 
         # Getting the amount of individuals to delete, and removing them.
 
@@ -281,61 +218,28 @@ class NSGA2:
         # Quantity of individuals of last front that will continue to next generation.
         remaining_individuals = self.population.offspring_size - individual_counter
 
-        #print("self.population.offspring_size:", self.population.offspring_size)
-        #print("individual_counter:", individual_counter)
-        #print("remaining_individuals:", remaining_individuals)
-
         # Getting the front that will have individuals removed.
         last_front = self.population.get_last_front()
-
-        #print("len(last_front):", len(last_front))
 
         # Getting the amount of individuals that are gonna be removed.
         amount_to_remove = len(last_front) - remaining_individuals
 
-        #print("amount_to_remove:", amount_to_remove)
         # Deleting the last "amount_to_remove" individuals from last front.
         while amount_to_remove != 0:
-            #print("Last front:")
-            #self._show_individuals_from_list(last_front)
-            #print("len(last_front):", len(last_front))
             individual = last_front[len(last_front)-1]
             self.population.delete_individual_from_last_front(individual)
             amount_to_remove -= 1
 
     def crossover(self):
         '''Crossover method.'''
-        population_current_size = self.population.get_current_population_size()
-
-        individual_remaining = self.POPULATION_SIZE - population_current_size
-
-        # Creating new individuals from two random individuals.
-        for _ in range(individual_remaining):
-
-            parent_one = self.population.get_random_individual()
-            parent_two = self.population.get_random_individual()
-
-            #print("\nparent_one:", parent_one)
-            #print("parent_two:", parent_two)
-
-            x_value = (parent_one.x_value + parent_two.x_value)//2
-            y_value = (parent_one.y_value + parent_two.y_value)//2
-
-            '''if (random.random() % 2) == 0:
-                x_value = parent_one.x_value
-                y_value = parent_two.y_value
-            else:
-                x_value = parent_two.x_value
-                y_value = parent_one.y_value'''
-
-            #print("\nparent_one:", parent_one)
-            #print("parent_two:", parent_two)
-            #print("child: (", x_value, ",", y_value, ")")
-            #print("new_individual: (", x_value, ",", y_value, ")")
-            self.population.new_individual(x_value, y_value)
+        pass
 
     def mutation(self):
         '''Mutation method.'''
+        pass
+
+    def evaluate(self):
+        '''How the individuals are evaluated.'''
         pass
 
     # Plotting
@@ -414,8 +318,8 @@ class NSGA2:
         plt.show()
 
     # Utils
-    def sort_individuals(self, individual_list):
-        '''Sort an list of individuals.'''
+    '''def sort_individuals(self, individual_list):
+        #Sort an list of individuals.
 
         sum_list = list()
         xy_sum = 0
@@ -438,7 +342,7 @@ class NSGA2:
             lowest = individual_list.pop(lowest_index)
             # Insert the lowest to the first available position.
             sum_list.insert(0, sys.maxsize)
-            individual_list.insert(i, lowest)
+            individual_list.insert(i, lowest)'''
 
     def _show_individuals_from_list(self, individual_list):
         for individual in individual_list:
