@@ -28,7 +28,7 @@ class Cenario(object):
         self.listaDeProcessos       = []
 
 
-    def carregaCenario(self,fileName,modelo):
+    def carregaCenario(self, fileName, modelo):
         cenario = open(fileName, 'r') 
         texto = cenario.readlines()
 

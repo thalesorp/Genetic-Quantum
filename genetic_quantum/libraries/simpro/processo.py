@@ -33,7 +33,7 @@ class Processo(object):
         self.cpuBursts = []
         self.ioBursts = []
         self.nIoBursts = 0
-        self.nCpuBursts = 0 
+        self.nCpuBursts = 0
 
         self.dPrioridade = 0.0
         self.rri = 0.0
@@ -74,7 +74,7 @@ class Processo(object):
                 self.ioBursts.append(int(random.triangular(ioBurstDist[0],ioBurstDist[2],ioBurstDist[1])))
 
         self.dicionarioExecucao = []
-        
+
     def setRri(self,valor):
         self.rri = valor
 
@@ -166,6 +166,7 @@ class Processo(object):
     def decrementaCpuBursts(self):
         del self.cpuBursts[0]
         self.nCpuBursts -= 1
+        #print("Decrementou cpu burst.\tself.nCpuBursts:", self.nCpuBursts)
 
     def getIoBurstAtual(self):
         return self.ioBursts[0]
@@ -181,23 +182,25 @@ class Processo(object):
 
     def reduzCpuBurst(self,valor):
         tempo = valor - self.getInicioExecucao()
-        print('REDUCAO DE CPU BURST')
-        print(('tempo ', tempo))
-        print(('BURST ', self.cpuBursts[0]))
+        #print('REDUCAO DE CPU BURST')
+        #print(('tempo ', tempo))
+        #print(('BURST ', self.cpuBursts[0]))
 
         self.cpuBursts[0] -= tempo
 
     def subQuantum(self):
-        #print 'REDUCAO DE CPU BURST (quantum)'
-        #print 'tempo ', self.quantum
-        #print 'BURST ', self.cpuBursts[0]
+        #print('\nREDUCAO DE CPU BURST (quantum)')
+        #print('tempo ', self.quantum)
+        #print('BURST ', self.cpuBursts[0])
 
-        if self.quantum > self.cpuBursts[0]:
+        #print("self.cpuBursts:", self.cpuBursts, "\tself.nCpuBursts:", self.nCpuBursts)
+        print("self.nCpuBursts:", self.nCpuBursts, "\tself.cpuBursts:", self.cpuBursts)
+        if self.quantum > self.cpuBursts[0]: # <--- "IndexError: list index out of range". A lista CpuBursts está vazia.
             self.decrementaCpuBursts()
             return False
         else:
             self.cpuBursts[0] -= self.quantum
-            #print 'Reduziu: ', self.cpuBursts[0]
+            #print('Reduziu: ', self.cpuBursts[0])
             return True
 
     def converteTempo(self,tempo):

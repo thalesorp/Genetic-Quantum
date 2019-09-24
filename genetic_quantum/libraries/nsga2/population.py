@@ -29,7 +29,7 @@ class Population(object):
         self.population_size = population_size
         self.offspring_size = offspring_size
 
-        self.chromosome_min_value = 0
+        self.chromosome_min_value = 1
         self.chromosome_max_value = 100
 
         self.individuals = list()
@@ -75,9 +75,18 @@ class Population(object):
                     return individual
                 counter -= 1
 
+    def get_current_population_size(self):
+        return len(self.individuals)
+
+    #^ +/- ok.
+
     def add_to_front(self, index, individual):
         ''' Add the individual into "index" front.'''
         self.fronts[index].append(individual)
+
+    def get_last_front_index(self):
+        ''' Retun the index of last front.'''
+        return len(self.fronts)-1
 
     def add_to_last_front(self, individual):
         ''' Add individual to last front.'''
@@ -116,10 +125,16 @@ class Population(object):
 
     def _show_individuals(self):
         '''Show the x and y values of each individual of population.'''
-        sys.stdout.write("INDIVIDUALS:\n  ")
+        sys.stdout.write("INDIVIDUALS:\n")
+
+        result = ""
+        i = 1
         for individual in self.individuals:
-            sys.stdout.write(str(individual) + ", ")
-        print("")
+            #sys.stdout.write("  " + individual.__simple_str__())
+            result += ("  ["+str(i)+"]\tquantum: " + str(individual.chromosome) + "\t" + individual.__simple_str__() + "\n")
+            i += 1
+
+        print(result)
 
     def _show_general_domination_info(self):
         '''Show all data of population.'''

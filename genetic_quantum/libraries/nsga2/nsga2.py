@@ -34,28 +34,45 @@ class NSGA2(object):
     # Methods
     def run(self):
         '''Method responsible for running the main loop of NSGA2.
-
         Starts with one population of size "POPULATION_SIZE".
         It's created the children of this population, that will be the quantity of "OFFSPRING_SIZE".
         The creation of those children is made by crossover and mutation.
         Sort them with: non-dominated sorting.
         Take the best individual according with: crowding distance sorting.
         "POPULATION_SIZE" is the max size of the new population.
-        Back to beginning. Repeated N generations.''' # pylint: disable=pointless-string-statement
-
-        self.population.initiate()
+        Back to beginning. Repeated N generations.'''
+        self.initiate_population()
 
         for generation in range(self.GENERATIONS):
 
-            print("GENERATION:", generation+1)
+            print("\n\nGENERATION:", generation+1)
 
+            self.population._show_individuals()
+
+            print("NON DOMINATED SORTING...")
             self.non_dominated_sorting()
 
+            print("CROWDING DISTANCE SORTING...")
             self.crowding_distance_sorting()
 
+            print("CROSSOVER...")
             self.crossover()
 
+            print("MUTATION...")
             self.mutation()
+
+            self.population._show_individuals()
+
+            print("EVALUATING INDIVIDUALS...")
+            self.evaluate()
+
+            input()
+
+    def initiate_population(self):
+        ''' Initiate the population of NSGA-II.'''
+        self.population.initiate()
+        print("EVALUATING INDIVIDUALS...")
+        self.evaluate()
 
     def non_dominated_sorting(self):
         ''' Sort the individuals according to they dominance and sort them into fronts.
@@ -128,6 +145,9 @@ class NSGA2(object):
             quantity_of_fronts -= 1
 
         # Calculating the crowding distance value for each individual.
+
+        solutions_amount = len(front[0].solutions)
+
         for front in self.population.fronts:
 
             # If there is only one individual in that front,
@@ -138,73 +158,63 @@ class NSGA2(object):
                 continue'''
 
             #                                                                   <---------- !
-            # Temporary lists that holds the x and y values of current front.
-            x_values = list()
-            y_values = list()
+            # List of lists: solutions_lists has "solutions_amount" lists. For example:
+            # solutions_lists = [ [1, 24.6], [3, 14.4], [7, 10.5] ]
+            # Each list is a objective function value. In that way, 1, 3 and 7
+            # is the solutions of the first individual.
 
-            for individual in front:
-                x_values.append(individual.x_value)
-                y_values.append(individual.y_value)
-            x_values.sort()
-            y_values.sort()
+            solutions_lists = list()
 
-            min_x_value = min(x_values)
-            max_x_value = max(x_values)
-            min_y_value = min(y_values)
-            max_y_value = max(y_values)
+            # solutions_lists: [[], [], [], []]
+            for i in range(solutions_amount):
+                solutions_list = list()
+                for individual in front:
+                    solutions_list.append(individual.solutions[i])
+                solutions_lists.append(solutions_list)
+
+            #print("solutions_lists:", solutions_lists)
+            '''solutions_lists:
+
+            indiv. index:
+             0                     1                     2                     3                    4                     5                    6                    7                     8                    9 
+          [ ['5',                  '5',                  '13',                 '22',                '11',                 '8',                 '4',                 '5',                  '5',                 '6'], 
+            ['229.4',              '148.8',              '184.30769230769232', '84.54545454545455', '162.36363636363637', '215.375',           '178.25',            '172.2',              '161.2',             '156.33333333333334'], 
+            ['96.8063872255489',   '95.53398058252426',  '98.46666666666665',  '93.2806324110672',  '94.41584158415843',  '95.50898203592814', '95.93056346044393', '94.1162109375',      '96.30367419212041', '91.43939393939394'], 
+            ['374.84117647058827', '389.38461538461536', '394.0978260869565',  '340.8632268632268', '287.7833219412167',  '293.8773291925466', '547.9663212435233', '337.33269230769235', '328.0394957983193', '403.3027989821883']]
+            '''
 
             # Getting the data and making the calculation of crowding distance for each individual.
-            for individual in front:
-                # Getting the index of current individual on the x and y values lists.
-                x_index = x_values.index(individual.x_value)
-                y_index = y_values.index(individual.y_value)
+            for i in range(len(front)):
+                individual = front[i]
 
-                # X:
-                # Checking if there's only one individual in that front.
-                if len(x_values) == 1:
-                    # If there is only one individual in that front,
-                    #     there's no need to calculate their crowding distance.
+                # Getting the index of current individual.
+                individual_index = i
+
+                # If there is only one individual in that front,
+                if len(front) == 1:
+                    # there's no need to calculate their crowding distance.
                     continue
-                    # When this happens, he's the left and right neighbour of yourself.
-                    #x_value_left_neighbour = x_values[0]
-                    #x_value_right_neighbour = x_values[0]
-                else:
-                    # Usually, the value is as described bellow.
-                    x_left_neighbour_index = x_index - 1
-                    x_right_neighbour_index = x_index + 1
-                    # But when isn't, then it's checked the cases when there's no neighbour on one side.
-                    if x_index == 0:
-                        # When it happens, the closest neighbour it's himself.
-                        x_left_neighbour_index = 0
-                    elif x_index == (len(x_values)-1):
-                        x_right_neighbour_index = (len(x_values)-1)
-                    # Getting the value of neighbours, which is what matters.
-                    x_value_left_neighbour = x_values[x_left_neighbour_index]
-                    x_value_right_neighbour = x_values[x_right_neighbour_index]
 
-                # Y:
-                if len(y_values) == 1:
-                    continue
-                    #y_value_top_neighbour = y_values[0]
-                    #y_value_bottom_neighbour = y_values[0]
-                else:
-                    y_top_neighbour_index = y_index + 1
-                    y_bottom_neighbour_index = y_index - 1
+                # Usually, the value is as described bellow.
+                left_neighbour_index = individual_index - 1
+                right_neighbour_index = individual_index + 1
 
-                    if y_index == 0:
-                        y_bottom_neighbour_index = 0
-                    elif y_index == (len(y_values)-1):
-                        y_top_neighbour_index = (len(y_values)-1)
+                # But when isn't, then it's checked the cases when there's no neighbour on one side.
+                if individual_index == 0:
+                    # When it happens, the closest neighbour it's himself.
+                    left_neighbour_index = 0
+                elif individual_index == (len(solutions_list)-1):
+                    right_neighbour_index = (len(solutions_list)-1)
 
-                    y_value_top_neighbour = y_values[y_top_neighbour_index]
-                    y_value_bottom_neighbour = y_values[y_bottom_neighbour_index]
+                for solutions_list in solutions_lists:
+                    right_neighbour_value = solutions_list[right_neighbour_index]
+                    left_neighbour_value = solutions_list[left_neighbour_index]
 
+                    max_value = max(solutions_list)
+                    min_value = min(solutions_list)
 
-                individual.crowding_distance += ((x_value_right_neighbour - x_value_left_neighbour)
-                                                 / (max_x_value - min_x_value)) #<--- Division by zero!
-
-                individual.crowding_distance += ((y_value_top_neighbour - y_value_bottom_neighbour)
-                                                 / (max_y_value - min_y_value)) #<--- Division by zero!
+                    individual.crowding_distance += ((right_neighbour_value - left_neighbour_value)
+                                                     / (max_value - min_value) )
 
         self.population.sort_fronts_by_crowding_distance()
 
@@ -232,10 +242,30 @@ class NSGA2(object):
 
     def crossover(self):
         '''Crossover method.'''
-        pass
+
+        # Getting the quantity of individuals that are needed to create.
+        amount_to_create = self.POPULATION_SIZE - len(self.population.individuals)
+
+        child_chromosome_list = list()
+
+        for _ in range(amount_to_create):
+            first_parent = self.population.get_random_individual()
+            second_parent = self.population.get_random_individual()
+
+            child_chromosome = (first_parent.chromosome + second_parent.chromosome) // 2
+
+            child_chromosome_list.append(child_chromosome)
+
+        for child_chromosome in child_chromosome_list:
+            self.population.new_individual(child_chromosome)
 
     def mutation(self):
         '''Mutation method.'''
+        '''
+        Dicidir quantos indivíduos vão sofrer mutação.
+        Sortear X% conforme a aplitude. (population.chromosome_max_value, population.chromosome_min_value)
+        Sortear se será acresentado ou subtraído tal porcentagem do quantum do individuo.
+        '''
         pass
 
     def evaluate(self):

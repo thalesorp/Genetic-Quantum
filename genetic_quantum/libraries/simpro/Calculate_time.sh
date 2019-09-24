@@ -25,7 +25,8 @@ for i in $(seq 1 ${#SCENARIO_FILES[@]}) ; do
     for j in $(seq 1 $COMPUTING_TIMES) ; do
         echo -e $j >> ${RESULTS[i-1]}
         #{ time ./sim_pro/SimPro.exe RR $QUANTUM ${SCENARIO_FILES[i-1]} P ; } 2>> ${RESULTS[i-1]}
-        { time python2 simpro/SimPro.py RR $QUANTUM ${SCENARIO_FILES[i-1]} P ; } 2>> ${RESULTS[i-1]}
+        #{ time python2 simpro/SimPro.py RR $QUANTUM ${SCENARIO_FILES[i-1]} P ; } 2>> ${RESULTS[i-1]}
+        { time python3 simpro.py RR $QUANTUM ${SCENARIO_FILES[i-1]} P ; } 2>> ${RESULTS[i-1]}
     done
 
     # Formatando o arquivo para ".csv":

@@ -10,15 +10,19 @@
 #                                                      #
 #------------------------------------------------------#
 
+import os
 from math import *
+import random
 
 from .colecoes import Colecoes
 from .fila import Fila
-import random
 #from .escalonador import Escalonador, PRTY, FCFS, RR, SJF, SRT, FPCS, IFCS, PFCS
 from .escalonador import *
 from .load import Cenario
 from .plot import Plot
+from .cpu import CPU
+from .processo import Processo
+from .dispositivo import Dispositivo
 
 #from numba import jit
 #import warnings
@@ -53,7 +57,7 @@ class Evento(object):
 
     def start(self):
         fel = []
-        self.cenario.carregaCenario(self.arquivo,self.modelo)
+        self.cenario.carregaCenario(self.arquivo, self.modelo)
 
         #Modelo DETERMINISTICO
         if self.modelo == 'D':
@@ -90,7 +94,7 @@ class Evento(object):
                 fel.append([1,tempClock,None])
         return fel
 
-    def fimChegadaProcessoCPU(self,tempo,processoId): # Evento 1
+    def fimChegadaProcessoCPU(self, tempo, processoId): # Evento 1
         fel = []
         cpu = CPU()
 
@@ -203,15 +207,16 @@ class Evento(object):
 
         processo = self.colecao.buscaProcesso(processoId)
         processo.incExecucao(tempo)
+
         if self.quantum != None: 
-            #No metodo RR, o burst apenas executa durante o tempo de quantum, e nao ate
-            #o fim. Assim, ao fim da execeucao da cpu o processo deve voltar para a fila
-            #de prontos. Caso o burst encerre, se inicia uma execucao IO (ver como implementar isso) 
-            
-            flag = processo.subQuantum() #reduz burst (True = Reduziu burst) (False = Decrementou)
-            if flag: 
+            # No metodo RR, o burst apenas executa durante o tempo de quantum, e nao ate o fim.
+            # Assim, ao fim da execeucao da cpu, o processo deve voltar para a fila de prontos.
+            # Caso o burst encerre, se inicia uma execucao IO (ver como implementar isso) 
+
+            flag = processo.subQuantum() #reduz burst (True = Reduziu burst) (False = Decrementou)                      # Chamou aqui.
+            if flag:
                 #processo volta para a fila de prontos
-                self.filaDeProntos.insert(processo)                
+                self.filaDeProntos.insert(processo)
                 #Existe processo aguardando execucao?
                 if not(self.filaDeProntos.empty()): #Fila de prontos nao vazia
                     novoProcesso = self.escalonador.selecionaProcesso(self.filaDeProntos,tempo)
@@ -240,7 +245,7 @@ class Evento(object):
                     cpu.setDisponivel(True)#libera CPU
                     cpu.incExecucao(tempo)
                 
-                return fel                
+                return fel
         else:
             processo.decrementaCpuBursts()
 
@@ -295,7 +300,6 @@ class Evento(object):
             cpu.incExecucao(tempo)
         
         return fel
-
 
     def fimExecutaIO(self,tempo,processoId):  # Evento 3
         fel = []
@@ -394,7 +398,6 @@ class Evento(object):
 
         return fel
 
-
     def fimEncerraProcesso(self,tempo,processoId):  # Evento 4
         fel = []
 
@@ -412,7 +415,7 @@ class Evento(object):
 
         return fel
 
-    def fimExecucao(self,tempo):
+    def fimExecucao(self, tempo):
         esperaExtra = 0
         cont = 0
         for p in self.colecao.Processos:
@@ -437,10 +440,10 @@ class Evento(object):
             tput = self.throughput
             taround = self.turnaround/self.throughput
             usamcpu = ((execucaoCPus/len(self.colecao.CPUs))/tempo)*100
-            tespera = (self.esperaTotal/self.throughput) + esperaExtra 
+            tespera = (self.esperaTotal/self.throughput) + esperaExtra
             #tespera = self.esperaTotal/self.throughput
 
-        #geração dos gráficos    
+        #geração dos gráficos
         #self.plot.geraGraficoProcessos(self.colecao.Finalizados)
         #self.plot.geraGraficoCPUs(self.colecao.CPUs)
         #self.plot.geraGraficoUtilizacao(self.colecao.CPUs)
@@ -450,45 +453,35 @@ class Evento(object):
         nomeCenario = str(self.arquivo)
         pasta = 'Resultados ' + nomeCenario[9:-4]
 
-        import os
+        #import os
 
         #-----
-        path=os.getcwd()
-        directories_up = 3
-        for _ in range(directories_up):
-            path=path[:path.rfind('/')]
-        pasta=path+"/resources/results"
+        path = os.getcwd()
+        #directories_up = 3
+        #for _ in range(directories_up):
+            #path=path[:path.rfind('/')]
+        pasta = path + "/resources/SimPro-results"
+        #print("pasta:", pasta)
         #-----
 
         if not os.path.exists(pasta):
             os.makedirs(pasta)
         ########
 
-        nome = str(pasta + '/' + self.escalonador.nome + '.txt')            
+        nome = str(pasta + '/' + self.escalonador.nome + '.txt')
         file = open(nome,'a')
 
+        text = ""
         if os.stat(nome).st_size == 0:
             text = 'THROUGHPUT\tTURNAROUND\tUTILIZACAO\tESPERA\n'
-            text += str(tput)
-            text += '\t'
-            text += str(taround)
-            text += '\t'
-            text += str(usamcpu)
-            text += '\t'
-            text += str(tespera)
-            text += '\n'
-        else:
-            text = str(tput)
-            text += '\t'
-            text += str(taround)
-            text += '\t'
-            text += str(usamcpu)
-            text += '\t'
-            text += str(tespera)
-            text += '\n'
+        text += str(float(tput))
+        text += '\t'
+        text += str(taround)
+        text += '\t'
+        text += str(usamcpu)
+        text += '\t'
+        text += str(tespera)
+        text += '\n'
 
-        
         file.write(text)
         file.close()
-
-        self.arquivo
