@@ -10,8 +10,6 @@
 #                                                      #
 #------------------------------------------------------#
 
-from math import *
-
 from .fila import Fila
 from .load import Cenario
 from .cpu import CPU
@@ -25,7 +23,7 @@ class Colecoes(object):
     Finalizados = []
     nProcessos = 0
 
-    #Retorna a Primeira CPU livre que encontrar na colecao
+    # Retorna a Primeira CPU livre que encontrar na coleção.
     def buscaCpuLivre(self):
         for cpu in self.CPUs:
             if cpu.getDisponivel():

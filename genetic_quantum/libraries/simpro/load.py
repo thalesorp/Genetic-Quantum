@@ -14,77 +14,83 @@ class Cenario(object):
 
     def __init__(self):
         self.tempoSimulacao = 0.0
-        self.nCPUs          = 0
-        self.nDispositivos  = 0
+        self.nCPUs = 0
+        self.nDispositivos = 0
 
-        #--------------------#
-        self.tempoChegadaProcesso   = 0
-        self.tempoEncProcesso       = []
-        self.nIObursts              = []
-        self.duracaoCPUburst        = []
-        self.duracaoIOburst         = []
-        self.prioridade             = []
+        self.tempoChegadaProcesso = 0
+        self.tempoEncProcesso = list()
+        self.nIObursts = list()
+        self.duracaoCPUburst = list()
+        self.duracaoIOburst = list()
+        self.prioridade = list()
 
-        self.listaDeProcessos       = []
+        self.listaDeProcessos = list()
 
 
-    def carregaCenario(self, fileName, modelo):
-        cenario = open(fileName, 'r') 
+    def carregaCenario(self, file_name, modelo):
+        cenario = open(file_name, 'r') 
         texto = cenario.readlines()
 
-        if modelo == 'D': #deterministico
-            #[id,chegada,CPUburst,prioridade]
+        if modelo == 'D':
             for linha in texto:
                 if linha.find('#') != -1:
-                    pass #comentarios
-                else:
-                    linha = linha.split(' ')
-                    if linha[0] == 'P': #dados de processo
-                        proc = [int(linha[1]),int(linha[2]),int(linha[3]),int(linha[4])]
-                        self.listaDeProcessos.append(proc)
-        elif modelo == 'P': #probabilistico
+                    # Ignorando comentários.
+                    continue
+
+                linha = linha.split(' ')
+
+                # Dados de processo.
+                if linha[0] == 'P':
+                    # [id, chegada, CPUburst, prioridade]
+                    p = [int(linha[1]), int(linha[2]), int(linha[3]), int(linha[4])]
+                    self.listaDeProcessos.append(p)
+
+        elif modelo == 'P':
             for linha in texto:
                 if linha.find('#') != -1:
-                    pass #comentarios do arq
-                else:
-                    linha = linha.split(' ')
-                    #DADOS SIMULACAO
-                    if linha[0] == 'S':
-                        if linha[1] == 'TS':
-                            self.tempoSimulacao = int(linha[2])
-                    #DADOS PROCESSO
-                    elif linha[0] == 'P':
-                        if linha[1] == 'CH':
-                            self.tempoChegadaProcesso = float(linha[2])
-                        elif linha[1] == 'PR':
-                            self.prioridade.append(float(linha[2]))
-                            self.prioridade.append(float(linha[3]))
-                            self.prioridade.append(float(linha[4]))
-                        elif linha[1] == 'EN':
-                            self.tempoEncProcesso.append(float(linha[2]))
-                            self.tempoEncProcesso.append(float(linha[3]))
-                            self.tempoEncProcesso.append(float(linha[4]))
-                        elif linha[1] == 'NI':
-                            self.nIObursts.append(float(linha[2]))
-                            self.nIObursts.append(float(linha[3]))
-                            self.nIObursts.append(float(linha[4]))
-                        elif linha[1] == 'DI':
-                            self.duracaoIOburst.append(float(linha[2]))
-                            self.duracaoIOburst.append(float(linha[3]))
-                            self.duracaoIOburst.append(float(linha[4]))
-                        elif linha[1] == 'DC':
-                            self.duracaoCPUburst.append(float(linha[2]))
-                            self.duracaoCPUburst.append(float(linha[3]))
-                            self.duracaoCPUburst.append(float(linha[4]))
-                    #DADOS CPUS
-                    elif linha[0] == 'C':
-                        if linha[1] == 'QT':
-                            self.nCPUs = int(linha[2])
-                    #DADOS MEMORIA
-                    elif linha[0] == 'M':
-                        if linha[1] == 'QT':
-                            self.tamMemoria = int(linha[2])
-                    #DADOS DISPOSITIVOS
-                    elif linha[0] == 'D':
-                        if linha[1] == 'QT':
-                            self.nDispositivos = int(linha[2])
+                    # Ignorando comentários.
+                    continue
+
+                linha = linha.split(' ')
+
+                # Dados da simulação.
+                if linha[0] == 'S':
+                    if linha[1] == 'TS':
+                        self.tempoSimulacao = int(linha[2])
+
+                # Dados de processos.
+                elif linha[0] == 'P':
+                    if linha[1] == 'CH':
+                        self.tempoChegadaProcesso = float(linha[2])
+                    elif linha[1] == 'PR':
+                        self.prioridade.append(float(linha[2]))
+                        self.prioridade.append(float(linha[3]))
+                        self.prioridade.append(float(linha[4]))
+                    elif linha[1] == 'EN':
+                        self.tempoEncProcesso.append(float(linha[2]))
+                        self.tempoEncProcesso.append(float(linha[3]))
+                        self.tempoEncProcesso.append(float(linha[4]))
+                    elif linha[1] == 'NI':
+                        self.nIObursts.append(float(linha[2]))
+                        self.nIObursts.append(float(linha[3]))
+                        self.nIObursts.append(float(linha[4]))
+                    elif linha[1] == 'DI':
+                        self.duracaoIOburst.append(float(linha[2]))
+                        self.duracaoIOburst.append(float(linha[3]))
+                        self.duracaoIOburst.append(float(linha[4]))
+                    elif linha[1] == 'DC':
+                        self.duracaoCPUburst.append(float(linha[2]))
+                        self.duracaoCPUburst.append(float(linha[3]))
+                        self.duracaoCPUburst.append(float(linha[4]))
+
+                # Dados das CPUs.
+                elif linha[0] == 'C' and linha[1] == 'QT':
+                    self.nCPUs = int(linha[2])
+
+                # Dados da memória.
+                elif linha[0] == 'M' and linha[1] == 'QT':
+                    self.tamMemoria = int(linha[2])
+
+                # Dados dos dispositivos.
+                elif linha[0] == 'D' and linha[1] == 'QT':
+                    self.nDispositivos = int(linha[2])

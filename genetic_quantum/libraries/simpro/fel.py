@@ -15,67 +15,47 @@ import sys
 
 class Fel(object):
 
-    fel = None
-    tempo = None
-    eventos = None
-    eventoId = None
-
-    def __init__(self,escalonador,cenario,modelo):
+    def __init__(self, escalonador, cenario, modelo):
         self.fel = []
-        self.tempo = 0.0
+        self.tempo = 0
         self.eventoId = 0
     
         self.eventos = Evento(escalonador, cenario, modelo)
-        agendar = self.eventos.start() 
+        lista_eventos = self.eventos.start()
 
-        self.agendaEvento(agendar)
+        self.agenda_evento(lista_eventos)
 
-    def getTempo(self):
-        return self.tempo
+    def agenda_evento(self, lista_eventos):
+        ''' Agenda o evento.'''
 
-    def setTempo(self, tempo):
-        self.tempo = tempo
+        #if not lista_eventos:
+            #print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tlista_eventos:", lista_eventos)
 
-    def getFel(self):
-        return self.fel
+        for evento in lista_eventos:
+            pos = 0
+            self.eventoId += 1 
 
-    #Agenda o evento
-    def agendaEvento(self, listaEventos):
-        #print '----LISTA PARA AGENDAR------'
-        #print listaEventos
-        if len(listaEventos) > 0:
-            for evento in listaEventos:
-                pos = 0
-                self.eventoId += 1 
-                if(len(self.fel) == 0): #Caso a fel esteja vazia
-                    self.fel.append(evento)
-                elif evento[0] == 0:
-                    self.fel.insert(0,evento)
-                else:
-                    for eventoAgendado in self.fel: #Enquanto o tempo do evento for maior, percorre FEL
-                        if(evento[1] < eventoAgendado[1]):
-                            break
-                        else:
-                            pos = pos + 1
-                    self.fel.insert(pos, evento)
-        else:
-            pass
-        #print 'Agendado'
+            # Caso a FEL esteja vazia.
+            if len(self.fel) == 0:
+                self.fel.append(evento)
+            elif evento[0] == 0:
+                self.fel.insert(0, evento)
+            else:
+                #Enquanto o tempo do evento for maior, percorre FEL.
+                for evento_agendado in self.fel:
+                    if evento_agendado[1] > evento[1]:
+                        break
+                    else:
+                        pos = pos + 1
+
+                self.fel.insert(pos, evento)
 
     def desagenda_evento(self, processoId, cpuId):
         ''' Desagenda Evento. '''
-        '''for i in range(len(self.fel)):
-            evento = self.fel[i]
-            # Buscando execução agendada.
-            if evento[0] == 2: 
-                if evento[2] == processoId:
-                    if evento[3] == cpuId:
-                        self.fel.pop(i)
-                        break'''
         for evento in self.fel:
             # Buscando execução agendada.
             if evento[0] == 2: 
-                if (evento[2] == processoId) and (evento[3] == cpuId):
+                if evento[2] == processoId and evento[3] == cpuId:
                     del self.fel[i]
                     return
 
@@ -85,38 +65,54 @@ class Fel(object):
         self.remove_primeiro_evento()
         lista_eventos = []
 
-        # Fim da chegada de processos na CPU. (?)
-        if evento[0] == 1:
-            self.tempo = evento[1]
-            processoId = evento[2]
-            lista_eventos = self.eventos.fimChegadaProcessoCPU(self.tempo, processoId)
-            self.agendaEvento(lista_eventos)
-
-        # Fim da execução na CPU.
-        elif evento[0] == 2:
-            self.tempo = evento[1]
-            processoId = evento[2]
-            cpuId = evento[3]
-            lista_eventos = self.eventos.fimExecutaCPU(self.tempo, processoId, cpuId)
-            self.agendaEvento(lista_eventos)
-
-        elif evento[0] == 3: #fimExecutaIO(self,tempo,processo)#
-            self.tempo = evento[1]
-            lista_eventos = self.eventos.fimExecutaIO(self.getTempo(),evento[2])
-            #print 'Fim execucao IO'
-            self.agendaEvento(lista_eventos)
-
-        elif (evento[0] == 4):#fimEncerraProcesso(self,tempo,processo)#
-            self.tempo = evento[1]
-            processoId = evento[2]
-            lista_eventos = self.eventos.fimEncerraProcesso(self.tempo, processoId)
-            self.agendaEvento(lista_eventos)
-
         # Desagendar algum evento da FEL.
-        elif (evento[0] == 0):
+        if evento[0] == 0:
             processoId = evento[1]
             cpuId = evento[2]
             self.desagenda_evento(processoId, cpuId)
+        else:
+            self.tempo = evento[1]
+            processoId = evento[2]
+
+            processo = self.eventos.colecao.buscaProcesso(processoId)
+            if processo:
+                print("UHUFHAVLGFJ processo.nCpuBursts:", processo.nCpuBursts, "\tprocesso.cpuBursts:", processo.cpuBursts)
+            else:
+                print("UHUFHAVLGFJ processo.nCpuBursts: N/A\tprocesso.cpuBursts: N/A.")
+
+            if processo:
+                if processo.nCpuBursts == 0 and processo.cpuBursts == []:
+                    print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tCAIU AQUI!")
+                    return
+
+            # Fim da chegada de processos na CPU. (?)
+            if evento[0] == 1:
+                output = "Evento " + str(evento[0]) + ": fimChegadaProcessoCPU."
+                print(output)
+                lista_eventos = self.eventos.fimChegadaProcessoCPU(self.tempo, processoId)
+
+            # Fim da execução na CPU.
+            elif evento[0] == 2:
+                output = "Evento " + str(evento[0]) + ": fimExecutaCPU."
+                print(output)
+                cpuId = evento[3]
+                lista_eventos = self.eventos.fimExecutaCPU(self.tempo, processoId, cpuId)
+
+            # Fim da execução de IO. (?)
+            elif evento[0] == 3:
+                output = "Evento " + str(evento[0]) + ": fimExecutaIO."
+                print(output)
+                lista_eventos = self.eventos.fimExecutaIO(self.tempo, processoId)
+
+            # Fim de encerra processo. (?)
+            elif evento[0] == 4:
+                output = "Evento " + str(evento[0]) + ": fimEncerraProcesso."
+                print(output)
+                lista_eventos = self.eventos.fimEncerraProcesso(self.tempo, processoId)
+
+            #print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tevento[0]:", evento[0], "lista_eventos:", lista_eventos)
+            print("Agenda eventos:", lista_eventos)
+            self.agenda_evento(lista_eventos)
 
     def remove_primeiro_evento(self):
         del self.fel[0]
@@ -125,17 +121,9 @@ class Fel(object):
         # Se a FEL não estiver vazia, retornar o primeiro elemento dela.
         if len(self.fel) > 0:
             return self.fel[0]
-        
+
         # Se ela estiver vazia, terminar a execução.
         sys.exit()
 
-    def fimExecucao(self):
-        #print 'Chamar Fim EVENTO'
-        self.eventos.fimExecucao(self.getTempo())
-
-    def toString(self):
-        pass
-        #1 - Chegada de processo
-        #2 - Execução na CPU
-        #3 - Execução IO
-        #4 - Fim de execucao
+    def fim_execucao(self):
+        self.eventos.fim_execucao(self.tempo)

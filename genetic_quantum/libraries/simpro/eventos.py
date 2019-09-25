@@ -31,7 +31,6 @@ from .dispositivo import Dispositivo
 class Evento(object):
 
     def __init__(self, escalonador, arquivo, modelo):
-        #carrega cenario
         self.cenario = Cenario()
         self.arquivo = arquivo
         self.escalonador = escalonador
@@ -44,22 +43,20 @@ class Evento(object):
 
         self.tempoSimulacao = 0.0
 
-    #----------INDICADORES-----------#
-        self.throughput     = 0
-        self.turnaround     = 0.0
-        self.esperaTotal    = 0.0
-    #________________________________#
+        # Indicadores.
+        self.throughput = 0
+        self.turnaround = 0.0
+        self.esperaTotal = 0.0
 
         self.filaDeProntos = Fila()
 
         self.plot = Plot()
 
-
     def start(self):
         fel = []
         self.cenario.carregaCenario(self.arquivo, self.modelo)
 
-        #Modelo DETERMINISTICO
+        # Modelo DETERMINISTICO.
         if self.modelo == 'D':
             cpu = CPU(1)
             self.colecao.CPUs.append(cpu)
@@ -72,11 +69,12 @@ class Evento(object):
             for processo in self.colecao.Processos:
                 chegadaProcesso = processo.getChegada()
                 fel.append([1,chegadaProcesso,processo.getProcessoId()])
-        #Modelo PROBABILISTICO
-        elif self.modelo == 'P':
-            self.tempoSimulacao = self.cenario.tempoSimulacao 
 
-            #povoa colecao de CPUs
+        # Modelo PROBABILISTICO.
+        elif self.modelo == 'P':
+            self.tempoSimulacao = self.cenario.tempoSimulacao
+
+            # Povoa coleção de CPUs.
             for i in range(1,self.cenario.nCPUs+1):
                 cpu = CPU(i)
                 self.colecao.CPUs.append(cpu)
@@ -85,27 +83,28 @@ class Evento(object):
                 dispositivo = Dispositivo(i)
                 self.colecao.Dispositivos.append(dispositivo)
             tempClock = 0
-            #Realiza as chegadas de processos
-            while (tempClock <= self.tempoSimulacao):
-            #for i in range(1,11):
+
+            # Realiza as chegadas de processos.
+            while tempClock <= self.tempoSimulacao:
                 chegadaProcesso = int(random.expovariate(1/float(self.cenario.tempoChegadaProcesso)))
                 tempClock = tempClock + chegadaProcesso
-                #inicializa FEL com chegadas de processos   
-                fel.append([1,tempClock,None])
+                # Inicializa FEL com chegadas de processos.
+                fel.append([1, tempClock, None])
+
         return fel
 
-    def fimChegadaProcessoCPU(self, tempo, processoId): # Evento 1
+    # Evento 1.
+    def fimChegadaProcessoCPU(self, tempo, processoId):
         fel = []
         cpu = CPU()
 
-        #Utilizacao da cpu no momento atual
+        # Utilização da CPU no momento atual.
         for c in self.colecao.CPUs:
             c.insereUtilizacaoAtual(tempo)
 
         if self.modelo == 'D':
             p = self.colecao.buscaProcesso(processoId)
-            #Ocorre quando dois processos chegam ao mesmo tempo
-                
+            # Ocorre quando dois processos chegam ao mesmo tempo.
 
         elif self.modelo == 'P':
             self.colecao.nProcessos += 1
@@ -115,26 +114,31 @@ class Evento(object):
             else:
                 dispositivo = None
 
-            p = Processo(ident,self.quantum,self.cenario.nIObursts,self.cenario.duracaoIOburst,self.cenario.duracaoCPUburst,dispositivo,tempo,self.cenario.prioridade)
-            #Adiciona o processo a colecao
+            p = Processo(
+                ident, self.quantum, self.cenario.nIObursts,
+                self.cenario.duracaoIOburst, self.cenario.duracaoCPUburst,
+                dispositivo, tempo, self.cenario.prioridade)
+            # Adiciona o processo a coleção.
             self.colecao.Processos.append(p)
 
-        emExecucao,cpu = self.escalonador.desempate(p,self.colecao)
+        emExecucao, cpu = self.escalonador.desempate(p, self.colecao)
         if emExecucao != None:
             self.filaDeProntos.insert(emExecucao)
-            fel.append([0,emExecucao.getProcessoId(),1])
+            fel.append([0, emExecucao.getProcessoId(), 1])
             emExecucao.setTerminoExecucao(tempo)
-            emExecucao.recalculaExecucao()                            
-            cpu.setDisponivel(True) 
-        
+            emExecucao.recalculaExecucao()
+            cpu.setDisponivel(True)
+
         self.filaDeProntos.insert(p)
-        #Existe CPU disponível?
+        # Existe CPU disponível?
         cpu = self.colecao.buscaCpuLivre()
-        #Verifica se foi encontrada uma CPU livre
+        # Verifica se foi encontrada uma CPU livre.
         if cpu != None:
-            processo = self.escalonador.selecionaProcesso(self.filaDeProntos,tempo)
+            processo = self.escalonador.selecionaProcesso(self.filaDeProntos, tempo)
             #agenda na fel ([eventoID,tempo,processoID,cpuID])
-            processo.incEspera(tempo) #O processo esperou desde o fim da ultima execucao ate agora.
+            # O processo esperou desde o fim da última execução até agora.
+
+            processo.incEspera(tempo)
             processo.setInicioExecucao(tempo)
             cpu.setInicioExecucao(tempo)
             #verificar se o quantum e menor ou maior que o burst atual
@@ -194,9 +198,8 @@ class Evento(object):
         else:
             return fel
 
-    #@jit(nopython=True)
-    #@jit
-    def fimExecutaCPU(self, tempo, processoId, cpuId): # Evento 2
+    # Evento 2.
+    def fimExecutaCPU(self, tempo, processoId, cpuId):
         fel = []
 
         cpu = self.colecao.buscaCpu(cpuId)
@@ -208,17 +211,17 @@ class Evento(object):
         processo = self.colecao.buscaProcesso(processoId)
         processo.incExecucao(tempo)
 
-        if self.quantum != None: 
-            # No metodo RR, o burst apenas executa durante o tempo de quantum, e nao ate o fim.
-            # Assim, ao fim da execeucao da cpu, o processo deve voltar para a fila de prontos.
-            # Caso o burst encerre, se inicia uma execucao IO (ver como implementar isso) 
+        if self.quantum != None:
+            # No metodo RR, o burst apenas executa durante o tempo de quantum, e não até o fim.
+            # Assim, ao fim da execeução da CPU, o processo deve voltar para a fila de prontos.
+            # Caso o burst encerre, se inicia uma execução IO. TODO: Ver como implementar isso.
 
             flag = processo.subQuantum() #reduz burst (True = Reduziu burst) (False = Decrementou)                      # Chamou aqui.
             if flag:
                 #processo volta para a fila de prontos
                 self.filaDeProntos.insert(processo)
                 #Existe processo aguardando execucao?
-                if not(self.filaDeProntos.empty()): #Fila de prontos nao vazia
+                if not(self.filaDeProntos.empty()): #Fila de prontos não vazia
                     novoProcesso = self.escalonador.selecionaProcesso(self.filaDeProntos,tempo)
                     #agenda na fel
                     novoProcesso.incEspera(tempo) #O processo esperou desde o fim da ultima execucao ate agora.
@@ -244,22 +247,28 @@ class Evento(object):
                 else: #Fila de prontos vazia
                     cpu.setDisponivel(True)#libera CPU
                     cpu.incExecucao(tempo)
-                
+
                 return fel
         else:
+            print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA. Decrementa CPU bursts.!!")
             processo.decrementaCpuBursts()
 
-        #Ou o processo encerra, ou executa IO
-        if (processo.getnCpuBursts() == 0): #Ultimo burst? Sim
+        # Ou o processo encerra, ou executa IO.
+        if processo.getnCpuBursts() == 0: #Ultimo burst? Sim
+            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB  evento 2: Último burst.")
+
             if self.modelo == 'D':
                 encerraProcesso = 0
+            
             elif self.modelo == 'P':
                 if self.cenario.tempoEncProcesso[1] == 0 or self.cenario.tempoEncProcesso[2] == 0:
                     encerraProcesso = 0
                 else:
                     encerraProcesso = int(random.triangular(self.cenario.tempoEncProcesso[0],self.cenario.tempoEncProcesso[2],self.cenario.tempoEncProcesso[1]))
+            
             #agenda na fel
             fel.append([4,(tempo+encerraProcesso),processo.getProcessoId()])
+        
         else: #Nao, então IO
             dispositivoId = processo.getDispositivo()
             dispositivo = self.colecao.buscaDispositivo(dispositivoId)
@@ -271,8 +280,9 @@ class Evento(object):
             else:
                 dispositivo.filaIO.insert(processo)
 
-        #Existe processo aguardando execucao?
-        if not(self.filaDeProntos.empty()): #Fila de prontos nao vazia
+        # Existe processo aguardando execução?
+        if not(self.filaDeProntos.empty()):
+            # Fila de prontos não vazia.
             novoProcesso = self.escalonador.selecionaProcesso(self.filaDeProntos,tempo)
             #agenda na fel
             novoProcesso.incEspera(tempo) #O processo esperou desde o fim da ultima execucao ate agora.
@@ -290,24 +300,28 @@ class Evento(object):
             cpu.insereExecucao()
             cpu.setDisponivel(True)
             cpu.incExecucao(tempo)
-            #nesse meio tempo a cpu sai de um processo e vai pra outro. É necessário incrementar
-            #a execucao referente ao processo anterior.
+            # Nesse meio tempo a cpu sai de um processo e vai pra outro.
+            # É necessário incrementar a execução referente ao processo anterior.
             cpu.setDisponivel(False)
-            cpu.incOciosidade(tempo) #A ociosidade será incrementada em zero.            
+            # A ociosidade será incrementada em zero.
+            cpu.incOciosidade(tempo)
             cpu.setProcessoAtual(novoProcesso.getProcessoId())
-        else: #Fila de prontos vazia
-            cpu.setDisponivel(True)#libera CPU
+        else:
+            # Fila de prontos vazia.
+            # Libera CPU.
+            cpu.setDisponivel(True)
             cpu.incExecucao(tempo)
         
         return fel
 
-    def fimExecutaIO(self,tempo,processoId):  # Evento 3
+    # Evento 3.
+    def fimExecutaIO(self, tempo, processoId):
         fel = []
         cpu = CPU()
 
-        #Utilizacao da cpu no momento atual
+        # Utilização da CPU no momento atual.
         for c in self.colecao.CPUs:
-            c.insereUtilizacaoAtual(tempo)        
+            c.insereUtilizacaoAtual(tempo)
 
         processo = self.colecao.buscaProcesso(processoId)
         
@@ -317,8 +331,9 @@ class Evento(object):
         dispositivoId = processo.getDispositivo()
         dispositivo = self.colecao.buscaDispositivo(dispositivoId)
 
-        #No fim do IO, sera executado um CPU burst
-        if (processo.getnCpuBursts() == 0): #Ultimo burst? (sim)
+        # No fim do IO, sera executado um CPU burst.
+        if processo.getnCpuBursts() == 0: # Último burst? (sim)
+            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB  evento 3: Último burst.")
             if self.modelo == 'D':
                 encerraProcesso = 0
             elif self.modelo == 'P':
@@ -328,12 +343,13 @@ class Evento(object):
                     encerraProcesso = int(random.triangular(self.cenario.tempoEncProcesso[0],self.cenario.tempoEncProcesso[2],self.cenario.tempoEncProcesso[1]))            
             #agenda na fel
             fel.append([4,(tempo+encerraProcesso),processo.getProcessoId()])
+
         else: #não
-            #Busca uma cpu que esteja livre
+            #Busca uma CPU que esteja livre.
             cpu = self.colecao.buscaCpuLivre()
-            #caso encontre cpu livre
+            # Caso encontre CPU livre.
             if cpu != None:
-                #agenda na fel
+                # Agenda na FEL.
                 processo.setInicioExecucao(tempo)
                 cpu.setInicioExecucao(tempo)
                 if (self.quantum != None) and (self.quantum <= processo.getCpuBurstAtual()):
@@ -346,7 +362,8 @@ class Evento(object):
                     cpu.setTerminoExecucao(tempo+processo.getCpuBurstAtual())
                 processo.insereExecucao()
                 cpu.insereExecucao()
-                cpu.setDisponivel(False) #reserva cpu para o processo
+                # Reserva CPU para o processo.
+                cpu.setDisponivel(False)
                 cpu.incOciosidade(tempo)
                 cpu.setProcessoAtual(processo.getProcessoId())
             else:
@@ -374,7 +391,7 @@ class Evento(object):
                 #reserva cpu para o novo processo
                 cpuInterrompida.setDisponivel(False)
                 cpuInterrompida.incOciosidade(tempo)
-                cpuInterrompida.setProcessoAtual(novo.getProcessoId())                
+                cpuInterrompida.setProcessoAtual(novo.getProcessoId())
                 #insere interrompido na fila de prontos
                 self.filaDeProntos.insert(processoInterrompido)
                 #agenda o novo processo na fel
@@ -392,18 +409,19 @@ class Evento(object):
             dispositivo.setDisponivel(False) #reserva dispositivo para o processo
             dispositivo.setProcessoAtual(processo.getProcessoId())
             #agenda na fel
-            fel.append([3,(tempo+novoProcesso.getIoBurstAtual()),novoProcesso.getProcessoId()])         
+            fel.append([3,(tempo+novoProcesso.getIoBurstAtual()),novoProcesso.getProcessoId()])
         else: #Fila Vazia
             dispositivo.setDisponivel(True)
 
         return fel
 
-    def fimEncerraProcesso(self,tempo,processoId):  # Evento 4
+    # Evento 4.
+    def fimEncerraProcesso(self, tempo, processoId):
         fel = []
 
-        #Utilizacao da cpu no momento atual
+        # Utilização da CPU no momento atual.
         for c in self.colecao.CPUs:
-            c.insereUtilizacaoAtual(tempo)        
+            c.insereUtilizacaoAtual(tempo)
 
         self.throughput += 1
         processo = self.colecao.buscaProcesso(processoId)
@@ -415,7 +433,7 @@ class Evento(object):
 
         return fel
 
-    def fimExecucao(self, tempo):
+    def fim_execucao(self, tempo):
         esperaExtra = 0
         cont = 0
         for p in self.colecao.Processos:
@@ -441,19 +459,10 @@ class Evento(object):
             taround = self.turnaround/self.throughput
             usamcpu = ((execucaoCPus/len(self.colecao.CPUs))/tempo)*100
             tespera = (self.esperaTotal/self.throughput) + esperaExtra
-            #tespera = self.esperaTotal/self.throughput
 
-        #geração dos gráficos
-        #self.plot.geraGraficoProcessos(self.colecao.Finalizados)
-        #self.plot.geraGraficoCPUs(self.colecao.CPUs)
-        #self.plot.geraGraficoUtilizacao(self.colecao.CPUs)
-        #self.plot.geraGraficoUtilizacaoGlobal(self.colecao.CPUs)
-
-        #Cria a pasta com o nome do arquivo
+        # Cria a pasta com o nome do arquivo.
         nomeCenario = str(self.arquivo)
         pasta = 'Resultados ' + nomeCenario[9:-4]
-
-        #import os
 
         #-----
         path = os.getcwd()

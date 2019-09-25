@@ -12,17 +12,16 @@
 
 class CPU(object):
 
-    def __init__(self,ident=None):
+    def __init__(self, ident=None):
 
-        self.cpuId              = 0
-        self.processoAtual      = 0
-        self.disponivel         = True
+        self.cpuId = 0
+        self.processoAtual = 0
+        self.disponivel = True
 
-        self.tempoAuxiliar      = 0.0
+        self.tempoAuxiliar = 0.0
 
-        self.inicioExecucao     = 0.0
-        self.terminoExecucao    = 0.0
-
+        self.inicioExecucao = 0.0
+        self.terminoExecucao = 0.0
 
         if ident != None:
             self.setCpuId(ident)
@@ -38,7 +37,8 @@ class CPU(object):
         self.totalExecucao = 0.0
 
         self.dicionarioExecucao = []
-        self.dicionarioUtilizacao = [[],[],[]] #[tempo],[utilizacao em %],[utilizacao em tempo]
+        # [ [tempo], [utilização em porcentagem], [utilização em tempo] ]
+        self.dicionarioUtilizacao = [[],[],[]]
 
     def insereUtilizacaoAtual(self,tempo):
         #x
@@ -138,9 +138,5 @@ class CPU(object):
         else:
             st3 = str(t3)
 
-
         t = st3+':'+st2+':'+st1
         return t
-
-
-#------------------------------------------#

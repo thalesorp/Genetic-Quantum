@@ -10,24 +10,22 @@
 #                                                      #
 #------------------------------------------------------#
 
-from math import *
-
-#https://docs.python.org/3.0/library/random.html
+#from math import *
 import random
 
 class Processo(object):
 
-    #Construtor de processos#
-    def __init__(self,ident,quantum,nIOdist,ioBurstDist,cpuBurstDist,dispositivoId,chegada,prioridade,lista=None):
+    def __init__(
+            self, ident, quantum, nIOdist, ioBurstDist, cpuBurstDist,
+            dispositivoId, chegada, prioridade, lista=None):
 
-    
         self.inicioExecucao = 0.0
         self.terminoExecucao = 0.0
 
-        #variavel para controlar o tempo de execução total
+        # Variável para controlar o tempo de execução total.
         self.tempoExecucao = 0.0
 
-        #variavel para controlar o tempo de espera total
+        # Variável para controlar o tempo de espera total.
         self.tempoEspera = 0.0
 
         self.cpuBursts = []
@@ -39,7 +37,8 @@ class Processo(object):
         self.rri = 0.0
         self.processoId = 0
 
-        if lista != None: #Deterministico
+        # Determinístico.
+        if lista != None:
             # [identificador][chegada][burst][prioridade]
             self.setProcessoId(lista[0])
             self.nCpuBursts = 1
@@ -48,30 +47,32 @@ class Processo(object):
             self.prioridade = lista[3]
             self.setQuantum(quantum)
             self.tempoAuxiliar = self.chegada
-        else: #Probabilistico
+        # Probabilístico.
+        else:
             self.tempoAuxiliar = chegada
-            self.chegada = chegada                      
+            self.chegada = chegada
 
             self.setProcessoId(ident)
 
-            self.prioridade = int(random.triangular(prioridade[0],prioridade[2],prioridade[1])) #Prioridade Estatica
+            # Prioridade estática.
+            self.prioridade = int(random.triangular(prioridade[0], prioridade[2], prioridade[1]))
 
             self.setQuantum(quantum)
-            
+
             if (nIOdist[0] == 0) and (nIOdist[1] == 0) and (nIOdist[2] == 0):
                 self.nIoBursts = 0
-            else:   
-                self.nIoBursts = int(random.triangular(nIOdist[0],nIOdist[2],nIOdist[1]))
-            
+            else:
+                self.nIoBursts = int(random.triangular(nIOdist[0], nIOdist[2], nIOdist[1]))
+
             self.nCpuBursts = self.nIoBursts + 1
 
             self.setDispositivo(dispositivoId)
 
-            for i in range(0,self.nCpuBursts):
-                self.cpuBursts.append(int(random.triangular(cpuBurstDist[0],cpuBurstDist[2],cpuBurstDist[1])))
-        
-            for i in range(0,self.nIoBursts):
-                self.ioBursts.append(int(random.triangular(ioBurstDist[0],ioBurstDist[2],ioBurstDist[1])))
+            for _ in range(self.nCpuBursts):
+                self.cpuBursts.append(int(random.triangular(cpuBurstDist[0], cpuBurstDist[2], cpuBurstDist[1])))
+
+            for _ in range(self.nIoBursts):
+                self.ioBursts.append(int(random.triangular(ioBurstDist[0], ioBurstDist[2], ioBurstDist[1])))
 
         self.dicionarioExecucao = []
 
@@ -193,9 +194,8 @@ class Processo(object):
         #print('tempo ', self.quantum)
         #print('BURST ', self.cpuBursts[0])
 
-        #print("self.cpuBursts:", self.cpuBursts, "\tself.nCpuBursts:", self.nCpuBursts)
-        print("self.nCpuBursts:", self.nCpuBursts, "\tself.cpuBursts:", self.cpuBursts)
-        if self.quantum > self.cpuBursts[0]: # <--- "IndexError: list index out of range". A lista CpuBursts está vazia.
+        #print("self.nCpuBursts:", self.nCpuBursts, "\tself.cpuBursts:", self.cpuBursts)
+        if self.quantum > self.cpuBursts[0]:                                    # <--- "IndexError: list index out of range". A lista CpuBursts está vazia.
             self.decrementaCpuBursts()
             return False
         else:
@@ -231,5 +231,3 @@ class Processo(object):
 
         t = st3+':'+st2+':'+st1
         return t
-
-#------------------------------------------#

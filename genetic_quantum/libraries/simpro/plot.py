@@ -17,16 +17,19 @@ import plotly.graph_objs as go
 
 
 class Plot(object):
-    def __init__(self):
-        self.dados = [] #dados do gráfico
 
-    def geraGraficoUtilizacaoGlobal(self,cpus):
+    def __init__(self):
+        # Dados do gráfico.
+        self.dados = []
+
+    def geraGraficoUtilizacaoGlobal(self, cpus):
         x = cpus[0].getUtilizacao()[0]
         y = []
         for i in range(0,len(cpus[0].getUtilizacao()[2])):
             aux = 0
             for cpu in cpus:
-                aux += cpu.getUtilizacao()[2][i] #soma dos valores de utilização
+                # Soma dos valores de utilização.
+                aux += cpu.getUtilizacao()[2][i]
             if x[i] == 0:
                 y.append(0)
             else:
@@ -38,13 +41,10 @@ class Plot(object):
                 mode = 'lines',
                 name = 'CPUs')
         data = [trace0]
-        plot(data,filename='cpuUtiG.html')      
+        plot(data,filename='cpuUtiG.html')
 
-
-
-    def geraGraficoUtilizacao(self, cpus): #utilizacao individual
-        #for cpu in cpus:
-        #   globals()['trace_cpu%s' % cpu.getCpuId()] =              
+    def geraGraficoUtilizacao(self, cpus):
+        ''' Utilização individual.'''
 
         if len(cpus) == 1:
             #plot({"data":[go.Scatter(x=cpus[0].getUtilizacao()[0],y=cpus[0].getUtilizacao()[1])],"layout": go.Layout(title="UtilizacaoCPU")})
@@ -95,9 +95,10 @@ class Plot(object):
         elif len(cpus) == 8:
             pass
 
-
     def geraGraficoProcessos(self, processos):
-        self.dados = [] #dados do gráfico
+        # Dados do gráfico.
+        self.dados = []
+
         procOrd = sorted(processos, key = lambda processo: processo.getProcessoId())
 
         for processo in procOrd:
@@ -107,13 +108,13 @@ class Plot(object):
                 termino = execucao[2]
                 self.dados.append(dict(Task=nome, Start=inicio, Finish=termino))
 
-
         fig = ff.create_gantt(self.dados, colors=['#333F44'], group_tasks=True, showgrid_x=True, showgrid_y=True)
         plot(fig, filename='process-job.html')
 
-
     def geraGraficoCPUs(self, cpus):
-        self.dados = [] #dados do gráfico
+        # Dados do gráfico.
+        self.dados = []
+        
         for cpu in cpus:
             for execucao in cpu.getExecucoes():
                 nome    = execucao[0]

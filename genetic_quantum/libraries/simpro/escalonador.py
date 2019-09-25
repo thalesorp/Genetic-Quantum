@@ -18,41 +18,16 @@ import skfuzzy as fuzz
 import time
 from skfuzzy import control as ctrl
 
-def defineEscalonador(arg):
-    if arg == 'PRTY':
-        escalonador = PRTY()
-    elif arg == 'FCFS':
-        escalonador = FCFS()
-    elif arg == 'SJF':
-        escalonador = SJF()
-    elif arg == 'RR':
-        escalonador = RR(5)
-    elif arg == 'SRT':
-        escalonador = SRT()
-    elif arg == 'PFCS':
-        escalonador = PFCS() #fuzzy
-    elif arg == 'IFCS':
-        escalonador = IFCS() #fuzzy
-    elif arg == 'FPCS':
-        escalonador = FPCS() #fuzzy
-    else:
-        print('Método de escalonamento inválido.')
-        quit()
-
-    return escalonador
-
-
 
 class Escalonador(object):
 
     def __init__(self):
         self.preemptivo = None
-        self.quantum    = None
-        self.nome       = None
+        self.quantum = None
+        self.nome = None
 
     def selecionaProcesso(self):
         raise NotImplementedError("O escalonador deve ter um metodo para selecionar processos")
-        #Abstrato
 
     def getPreemp(self):
         return self.preemptivo
@@ -60,15 +35,16 @@ class Escalonador(object):
     def getQuantum(self):
         return self.quantum
 
-#Priority (Escalonamento por prioridades)
-#-------------------------------------------------------------------------------------#
+
+#Priority (escalonamento por prioridades).
 class PRTY(Escalonador):
+
     def __init__(self):
         self.preemptivo = False
         self.quantum = None
         self.nome = 'PRTY'
 
-    def selecionaProcesso(self,filaDeProntos,tempo):
+    def selecionaProcesso(self, filaDeProntos, tempo):
         #Ordena a fila de processos, tendo como critério a prioridade
         listaOrdenada = sorted(filaDeProntos.queue, key=lambda processo: (processo.getPrioridade(),processo.getChegada()), reverse = True)
         filaDeProntos.queue = listaOrdenada
@@ -76,7 +52,7 @@ class PRTY(Escalonador):
 
         return filaDeProntos.remove()
 
-    def recalcula(self,filaDeProntos,colecao,tempoAtual):
+    def recalcula(self, filaDeProntos, colecao, tempoAtual):
         #obtem-se o mais prioritario da fila de prontos
         listaOrdenada = sorted(filaDeProntos.queue, key=lambda processo: (processo.getPrioridade(),processo.getChegada()), reverse = True)
         novoProcesso = listaOrdenada[0]
@@ -107,9 +83,10 @@ class PRTY(Escalonador):
             if novoProcesso.getChegada() < processoInterrompido.getChegada():
                 filaDeProntos.remove(novoProcesso.getProcessoId())
                 return novoProcesso,processoInterrompido,cpuInterrompida
+
         return None, None, None
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         if colecao.buscaCpuLivre() == None:
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
@@ -119,46 +96,50 @@ class PRTY(Escalonador):
                             return emExecucao,cpu
         return None,None
 
-#-------------------------------------------------------------------------------------#
-# First Come, First Served (Primeiro a chegar, primeiro a ser servido)
+
+# First Come, First Served (primeiro a chegar, primeiro a ser servido).
 class FCFS(Escalonador):
+
     def __init__(self):
         self.preemptivo = False
         self.quantum = None
         self.nome = 'FCFS'
-    #Retorna o primeiro processo que chegou
-    def selecionaProcesso(self,listaDeProcessos,tempo):
+
+    def selecionaProcesso(self, listaDeProcessos, tempo):
+        ''' Retorna o primeiro processo que chegou.'''
         processo = listaDeProcessos.remove()
         return processo
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         return None,None
 
-#-------------------------------------------------------------------------------------#
-# Round Robin (Chaveamento Circular)
+
+# Round Robin (chaveamento circular).
 class RR(Escalonador):
+
     def __init__(self, quantum):
         self.preemptivo = False
         self.quantum = quantum
         self.nome = 'RR'
 
-    def selecionaProcesso(self,listaDeProcessos,tempo):
+    def selecionaProcesso(self, listaDeProcessos, tempo):
         # "Tira da cabeça e bota no rabo." (SILVA, D. M. 2017)
         processo = listaDeProcessos.remove()
         return processo
 
-    def desempate(self,processo,colecao):
-        return None,None    
+    def desempate(self, processo, colecao):
+        return None,None
 
-#-------------------------------------------------------------------------------------#
-# Shortest Job First (Trabalho mais curto primeiro)
+
+# Shortest Job First (trabalho mais curto primeiro).
 class SJF(Escalonador):
+
     def __init__(self):
         self.preemptivo = False
         self.quantum = None
         self.nome = 'SJF'
 
-    def selecionaProcesso(self,listaDeProcessos,tempo):
+    def selecionaProcesso(self, listaDeProcessos, tempo):
         menor = listaDeProcessos.queue[0].getCpuBurstAtual()
         menorProc = listaDeProcessos.queue[0]
         for processo in listaDeProcessos.queue:
@@ -168,7 +149,7 @@ class SJF(Escalonador):
         listaDeProcessos.remove(menorProc.getProcessoId())
         return menorProc
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         if colecao.buscaCpuLivre() == None: #Se houver CPU livre, nao precisa de desempate
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
@@ -179,15 +160,16 @@ class SJF(Escalonador):
                             return emExecucao,cpu
         return None,None   
 
-#-------------------------------------------------------------------------------------#
-# Shortes Remaining Time (Menor tempo faltando)
+
+# Shortes Remaining Time (menor tempo faltando).
 class SRT(Escalonador):
+
     def __init__(self):
-        self.preemptivo = True #Escalonador preemptivo
+        self.preemptivo = True # Escalonador preemptivo.
         self.quantum = None
         self.nome = 'SRT'
 
-    def selecionaProcesso(self,listaDeProcessos,tempo):
+    def selecionaProcesso(self, listaDeProcessos, tempo):
         menor = listaDeProcessos.queue[0].getCpuBurstAtual()
         menorProc = listaDeProcessos.queue[0]
         for processo in listaDeProcessos.queue:
@@ -197,7 +179,7 @@ class SRT(Escalonador):
         listaDeProcessos.remove(menorProc.getProcessoId())
         return menorProc
 
-    def recalcula(self,filaDeProntos,colecao,tempoAtual):
+    def recalcula(self, filaDeProntos, colecao, tempoAtual):
         menorBurstPronto = filaDeProntos.queue[0].getCpuBurstAtual()
         menorProcPronto = filaDeProntos.queue[0]
         for processo in filaDeProntos.queue:
@@ -232,7 +214,7 @@ class SRT(Escalonador):
         else:
             return None,None,None
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         if colecao.buscaCpuLivre() == None:
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
@@ -244,26 +226,26 @@ class SRT(Escalonador):
                     if emExecucao.getChegada() == processo.getChegada():
                         if processo.getCpuBurstAtual() < emExecucao.getCpuBurstAtual(): #Criterio de desempate
                             return emExecucao,cpu
-        return None,None
+        return None, None
 
 
-#-----------------------------------FUZZY--------------------------------------------------------#
-#Fuzzy Priority CPU Scheduling Algorithm - Bashir et al (2011)
+# Fuzzy Priority CPU Scheduling Algorithm - Bashir et al (2011).
 class FPCS(Escalonador):
+
     def __init__(self):
-        self.preemptivo = False #verificar isso
-        self.quantum    = None
+        self.preemptivo = False # TODO: Verificar isso.
+        self.quantum = None
         self.nome = 'FPCS'
 
-    def selecionaProcesso(self,filaDeProntos,tempo):
+    def selecionaProcesso(self, filaDeProntos,tempo):
         for processo in filaDeProntos.queue:
             self.recalculaPrioridades(processo, tempo)
 
         filaDeProntos.queue = sorted(filaDeProntos.queue, key = lambda processo: processo.getPrioridadeDinamica(), reverse = True)
 
         return filaDeProntos.remove()
-    
-    def recalculaPrioridades(self,processo,tempo):
+
+    def recalculaPrioridades(self, processo, tempo):
         # New Antecedent/Consequent objects hold universe variables and membership
         # functions
         tempoEspera = ctrl.Antecedent(np.arange(0, 11, 1), 'tempoEspera') #causa
@@ -343,26 +325,25 @@ class FPCS(Escalonador):
         dPrioridade = dinamicP.output['pDinamica']
         processo.setPrioridadeDinamica(dPrioridade)
 
+    def desempate(self, processo, colecao):
+        return None, None
 
-    def desempate(self,processo,colecao):
-        return None,None
 
-#------------------------------------------------------------------------------------------------#
-#Improved Fuzzy-Based CPU Scheduling - Behera et al (2012)
+# Improved Fuzzy-Based CPU Scheduling - Behera et al (2012).
 class IFCS(Escalonador):
+
     def __init__(self):
         self.preemptivo = False
         self.quantum = None
         self.nome = 'IFCS'
+
         self.bti = []
         self.pti = []
         self.ati = []
         self.rri = []
+        self.pId = []
 
-        self.pId = []        
-
-
-    def selecionaProcesso(self,filaDeProntos,tempo):
+    def selecionaProcesso(self, filaDeProntos, tempo):
         #Caso tenha algum processo sem prioridade dinamica calculada
         #percorre os precessos calculando
         self.recalculaPrioridades(filaDeProntos,tempo)
@@ -371,8 +352,7 @@ class IFCS(Escalonador):
         print((processo.getProcessoId()))
         return processo
 
-
-    def recalculaPrioridades(self,filaDeProntos,tempo):
+    def recalculaPrioridades(self, filaDeProntos, tempo):
         responseR = 0.0
 
         for i in range(len(filaDeProntos.queue)):
@@ -432,7 +412,7 @@ class IFCS(Escalonador):
         #ordena fila de prontos
         filaDeProntos.queue = sorted(filaDeProntos.queue, key = lambda processo: processo.getPrioridadeDinamica(), reverse = True)
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         if colecao.buscaCpuLivre() == None:
             lista = Fila()
             for p in colecao.Processos:
@@ -441,18 +421,19 @@ class IFCS(Escalonador):
 
             for cpu in colecao.CPUs:
                 if cpu.getDisponivel():
-                    return None,None
+                    return None, None
                 else:
                     emExecucao = colecao.buscaProcesso(cpu.getProcessoAtual())
                     if emExecucao.getChegada() == processo.getChegada():
                         self.recalculaPrioridades(lista,processo.getChegada())
                         if emExecucao.getPrioridadeDinamica() < processo.getPrioridadeDinamica():
                             return emExecucao,cpu
-        return None,None
+        return None, None
 
-#------------------------------------------------------------------------------------------------#
+
 #Proposed Fuzzy CPU Scheduling Algorithm - Ajmani (2013)
 class PFCS(Escalonador):
+
     def __init__(self):
         self.preemptivo = False
         self.quantum = None
@@ -461,17 +442,17 @@ class PFCS(Escalonador):
         self.bti = []
         self.pti = []
         self.ati = []
-        self.pId = []          
+        self.pId = []
 
-    def selecionaProcesso(self,filaDeProntos,tempo):
+    def selecionaProcesso(self, filaDeProntos, tempo):
         #Caso tenha algum processo sem prioridade dinamica calculada
         #percorre os precessos calculando
         self.recalculaPrioridades(filaDeProntos,tempo)
         processo = filaDeProntos.remove()
         #processo.setRriCongelado(True)
-        return processo       
+        return processo
 
-    def recalculaPrioridades(self,filaDeProntos,tempo):
+    def recalculaPrioridades(self, filaDeProntos, tempo):
 
         for i in range(len(filaDeProntos.queue)):
             if filaDeProntos.queue[i].getProcessoId() not in self.pId:
@@ -487,7 +468,7 @@ class PFCS(Escalonador):
                     up = self.pti[j]/(float(max(self.pti)) + 1)
                     print(('bti ',self.bti[j]))
                     print(('max bti ',max(self.bti)))
-        
+
                     ub = 1 - (self.bti[j]/float(max(self.bti) + 1))
                     if filaDeProntos.queue[i].getPrioridade() == min(self.pti):
                         pDinamica = up+ub
@@ -496,14 +477,14 @@ class PFCS(Escalonador):
                         pDinamica = max(up,ub)
                         filaDeProntos.queue[i].setPrioridadeDinamica(pDinamica)
 
-            print('--------------')
-            print(('up: ', up))
-            print(('ub: ', ub))
-            print(('id ', filaDeProntos.queue[i].getProcessoId()))
-            print(('pd ', pDinamica))
+            #print('--------------')
+            #print(('up: ', up))
+            #print(('ub: ', ub))
+            #print(('id ', filaDeProntos.queue[i].getProcessoId()))
+            #print(('pd ', pDinamica))
             filaDeProntos.queue = sorted(filaDeProntos.queue, key = lambda processo: processo.getPrioridadeDinamica(), reverse = True)               
 
-    def desempate(self,processo,colecao):
+    def desempate(self, processo, colecao):
         if colecao.buscaCpuLivre() == None:
             lista = Fila()
             for p in colecao.Processos:
@@ -518,63 +499,7 @@ class PFCS(Escalonador):
                     if emExecucao.getChegada() == processo.getChegada():
                         self.recalculaPrioridades(lista,processo.getChegada())
                         if emExecucao.getPrioridadeDinamica() < processo.getPrioridadeDinamica():
-                            print(('V processo: ', processo.getProcessoId()))
-                            print(('x emExecucao: ', emExecucao.getProcessoId()))
+                            #print(('V processo: ', processo.getProcessoId()))
+                            #print(('x emExecucao: ', emExecucao.getProcessoId()))
                             return emExecucao,cpu
-        return None,None
-
-
-
-
-        '''        
-        lista = []
-
-        for p in colecao.Processos:
-            if p.getChegada() == processo.getChegada(): 
-                lista.append(p)
-
-        #1) For each process Pi in ready queue fetch its parameters
-        #burst time (bti), static priority (pti), and arrival time (ati)
-        #and give them as input to FIS.
-
-        #bti = Burst time
-        #pti = Prioridade estatica
-        #ati = Tempo de chegada
-
-        #É necessário conhecer o Max(pti) e o Max(bti)
-
-        bti = []
-        pti = []
-        ati = []
-
-        for processo in lista:
-            bti.append(processo.getCpuBurstAtual())
-            pti.append(processo.getPrioridade())
-            ati.append(processo.getChegada())
-
-        for i in xrange(len(lista)):
-            up = pti[i]/float(max(pti)) + 1
-            ub = 1 - (bti[i]/float(max(bti)) + 1)
-            if lista[i].getPrioridade() == min(pti):
-                lista[i].setPrioridadeDinamica(up+ub)
-            else:
-                lista[i].setPrioridadeDinamica(max(up,ub))
-
-        #ordena fila de prontos
-        ordenada = sorted(lista, key = lambda processo: processo.getPrioridadeDinamica())
-        print ordenada
-        aux = []
-        for cpu in colecao.CPUs:
-            if cpu.getDisponivel():
-                return None,None
-            else:                
-                aux.append(colecao.buscaProcesso(cpu.getProcessoAtual()).getPrioridadeDinamica())
-
-        for cpu in colecao.CPUs:
-            if colecao.buscaProcesso(cpu.getProcessoAtual()).getPrioridadeDinamica() == min(aux):
-                print 'aaaaaaa'
-                if colecao.buscaProcesso(cpu.getProcessoAtual()).getPrioridadeDinamica() < ordenada[0].getPrioridadeDinamica():
-                    return colecao.buscaProcesso(cpu.getProcessoAtual()),cpu
-
-        return None,None
-        '''
+        return None, None

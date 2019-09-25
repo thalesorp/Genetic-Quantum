@@ -67,13 +67,13 @@ class GeneticQantum(NSGA2):
                 individual.solutions = simulator.run_and_get_results(quantum)
 
                 result = "  [" + str(i) + "]\t" + str(individual)
-                print(result)
+                print(result+"\n\n\n")
 
                 new_individual = Individual(quantum)
                 new_individual.solutions = simulator.run_and_get_results(quantum)
                 
                 result = "  [" + str(i) + "]\t" + str(new_individual)
-                print(result)
+                print(result+"\n\n\n")
 
                 i += 1
 

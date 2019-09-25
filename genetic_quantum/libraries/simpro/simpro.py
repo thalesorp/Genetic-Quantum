@@ -11,39 +11,33 @@
 #------------------------------------------------------#
 
 import os
-
-#from Escalonador import *
-from .escalonador import Escalonador, RR
-#from Eventos import *
-from .eventos import Evento
-from .fel import Fel
-
-#from .population import Population
-
 import sys
 import argparse
+
+from .escalonador import Escalonador, RR
+from .eventos import Evento
+from .fel import Fel
 
 class SimPro(object):
 
     def run(self, quantum, scenario, mode):
-        #print("\nIn \"SimPro\"...")
-        #print("  Quantum:", quantum)
-        #print("  Scenario:", scenario)
-        #print("  Mode:", mode)
-
         scheduler = RR(quantum)
 
         fel = Fel(scheduler, scenario, mode)
 
         if mode == 'D':
-            while len(fel.getFel()) > 0:
+            while len(fel.fel) > 0:
                 fel.consome()
 
         elif mode == 'P':
-            while fel.getTempo() < fel.eventos.tempoSimulacao:
+            while fel.tempo < fel.eventos.tempoSimulacao:
+                output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
+                print(output)
                 fel.consome()
 
-        fel.fimExecucao()
+        output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
+        print(output)
+        fel.fim_execucao()
 
     def run_and_get_results(self, quantum):
         ''' Return one list with all four results of simulation.'''

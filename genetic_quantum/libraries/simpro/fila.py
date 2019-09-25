@@ -11,15 +11,15 @@
 #------------------------------------------------------#
 
 class Fila(object):
-            
+
     def __init__(self):
-        self.queue = []      
+        self.queue = []
 
     def insert(self,element):
         self.queue.append(element)
 
     def remove(self,ident=None):
-        if(not self.empty()):
+        if not self.empty():
             if ident == None:
                 head = self.queue[0]
                 del self.queue[0]
@@ -30,20 +30,18 @@ class Fila(object):
                         pos = self.queue.index(processo)
                         del self.queue[pos]
         else:
-            return "Empty Queue"    
+            return "Empty queue."
 
     def empty(self):
-        if(len(self.queue) == 0):
+        if not self.queue:
+            # Empty queue.
             return True
-        else:
-            return False              
+        return False
 
     def toString(self):
         temp = ""
 
         for x in self.queue:
             temp = temp + str(x) + '\n'
-        
-        return temp
 
-        
+        return temp
