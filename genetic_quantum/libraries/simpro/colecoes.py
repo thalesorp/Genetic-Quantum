@@ -23,11 +23,12 @@ from .processo import Processo
 class Colecoes():
     ''' Class docstring.'''
 
-    CPUs = []
-    Dispositivos = []
-    Processos = []
-    Finalizados = []
-    nProcessos = 0
+    def __init__(self):
+        self.CPUs = []
+        self.Dispositivos = []
+        self.Processos = []
+        self.Finalizados = []
+        self.nProcessos = 0
 
     # Retorna a Primeira CPU livre que encontrar na coleção.
     def buscaCpuLivre(self):
@@ -52,10 +53,17 @@ class Colecoes():
         return None
 
     def buscaProcesso(self, ident):
+
+        '''
+        print(" - ")
+        for processo in self.Processos:
+            print(processo)
+        print(" - ")
+        '''
+
         for processo in self.Processos:
             if processo.getProcessoId() == ident:
                 return processo
-                
         return None
 
     def finalizaProcesso(self, ident):
@@ -64,5 +72,4 @@ class Colecoes():
                 self.Finalizados.append(self.Processos[i])
                 del self.Processos[i]
                 return
-
         return

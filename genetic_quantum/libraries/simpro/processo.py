@@ -78,9 +78,13 @@ class Processo():
             for _ in range(self.nIoBursts):
                 self.ioBursts.append(int(random.triangular(ioBurstDist[0], ioBurstDist[2], ioBurstDist[1])))
 
-        print("-> nCpuBursts:", self.nCpuBursts, "\tcpuBursts:", self.cpuBursts, "\tprocessoId:", self.processoId)
+        #print("-> nCpuBursts:", self.nCpuBursts, "\tcpuBursts:", self.cpuBursts, "\tprocessoId:", self.processoId)
 
         self.dicionarioExecucao = []
+
+    def __str__(self):
+        output = "PID: " + str(self.processoId) + " nCpuBursts:" + str(self.nCpuBursts) + " cpuBursts: "+ str(self.cpuBursts)
+        return(output)
 
     def setRri(self, valor):
         ''' Method docstring.'''
@@ -198,6 +202,7 @@ class Processo():
 
     def decrementaCpuBursts(self):
         ''' Method docstring.'''
+        #print("ENTROU NO DECREMENTA CPU BURST! PID =", self.processoId)
         del self.cpuBursts[0]
         self.nCpuBursts -= 1
 
@@ -226,7 +231,7 @@ class Processo():
     def subQuantum(self):
         ''' Method docstring.'''
 
-        print("nCpuBursts:", self.nCpuBursts, "\tcpuBursts:", self.cpuBursts, "\tprocessoId:", self.processoId)
+        #print("nCpuBursts:", self.nCpuBursts, "\tcpuBursts:", self.cpuBursts, "\tprocessoId:", self.processoId)
         if self.quantum >= self.cpuBursts[0]:                                   # <--- "IndexError: list index out of range". A lista CpuBursts está vazia.
             self.decrementaCpuBursts()
             return False

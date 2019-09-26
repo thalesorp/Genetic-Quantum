@@ -39,11 +39,11 @@ class SimPro():
         elif mode == 'P':
             while fel.tempo < fel.eventos.tempoSimulacao:
                 output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
-                print(output)
+                #print(output)
                 fel.consome()
 
         output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
-        print(output)
+        #print(output)
         fel.fim_execucao()
 
     def run_and_get_results(self, quantum):

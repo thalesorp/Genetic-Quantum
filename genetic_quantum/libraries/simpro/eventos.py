@@ -82,11 +82,12 @@ class Evento():
             self.tempoSimulacao = self.cenario.tempoSimulacao
 
             # Povoa coleção de CPUs.
-            for i in range(1,self.cenario.nCPUs+1):
+            for i in range(1, self.cenario.nCPUs+1):
                 cpu = CPU(i)
                 self.colecao.CPUs.append(cpu)
-            #povoa colecao de Dispositivos
-            for i in range(1,self.cenario.nDispositivos+1):
+
+            # Povoa colecao de Dispositivos.
+            for i in range(1, self.cenario.nDispositivos+1):
                 dispositivo = Dispositivo(i)
                 self.colecao.Dispositivos.append(dispositivo)
             tempClock = 0
@@ -119,7 +120,7 @@ class Evento():
             self.colecao.nProcessos += 1
             ident = self.colecao.nProcessos
             if self.cenario.nDispositivos != 0:
-                dispositivo = random.randint(1,self.cenario.nDispositivos)
+                dispositivo = random.randint(1, self.cenario.nDispositivos)
             else:
                 dispositivo = None
 
@@ -128,6 +129,7 @@ class Evento():
                 self.cenario.duracaoIOburst, self.cenario.duracaoCPUburst,
                 dispositivo, tempo, self.cenario.prioridade)
             # Adiciona o processo a coleção.
+            #print("Processo criado:", p)
             self.colecao.Processos.append(p)
 
         emExecucao, cpu = self.escalonador.desempate(p, self.colecao)
@@ -151,8 +153,9 @@ class Evento():
             processo.setInicioExecucao(tempo)
             cpu.setInicioExecucao(tempo)
             #verificar se o quantum e menor ou maior que o burst atual
+            #print("------------------------------> processo ID:", processo.processoId)
             if (self.quantum != None) and (self.quantum <= processo.getCpuBurstAtual()):
-                fel.append([2,(tempo+self.quantum),processo.getProcessoId(),cpu.getCpuId()])
+                fel.append([2, (tempo+self.quantum), processo.getProcessoId(), cpu.getCpuId()])
                 processo.setTerminoExecucao(tempo+self.quantum)
                 cpu.setTerminoExecucao(tempo+self.quantum)
             else:
@@ -264,7 +267,7 @@ class Evento():
 
                 return fel
         else:
-            print("Evento 2: Decrementa CPU bursts.")
+            #print("-------------------------- NÃO É ROUND ROBIN!")
             processo.decrementaCpuBursts()
 
         # Ou o processo encerra, ou executa IO.
@@ -500,7 +503,7 @@ class Evento():
         ########
 
         nome = str(pasta + '/' + self.escalonador.nome + '.txt')
-        file = open(nome,'a')
+        file = open(nome, 'a')
 
         text = ""
         if os.stat(nome).st_size == 0:

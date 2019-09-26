@@ -14,7 +14,9 @@
 ''' Module docstring.'''
 
 from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error,no-absolute-import
+from libraries.nsga2.individual import Individual # pylint: disable=import-error,no-absolute-import
 from libraries.simpro.simpro import SimPro # pylint: disable=import-error
+
 
 class GeneticQantum(NSGA2):
     ''' Main class of this project.'''
@@ -43,10 +45,10 @@ class GeneticQantum(NSGA2):
 
                 i += 1
                 result = "  [" + str(i) + "]\t" + str(individual)
-                print(result+"\n\n\n")
+                #print(result+"\n\n\n")
 
                 '''new_individual = Individual(quantum)
-                new_individual.solutions = simulator.run_and_get_results(quantum)
+                new_individual.solutions = self.simulator.run_and_get_results(quantum)
 
                 result = "  [" + str(i) + "]\t" + str(new_individual)
                 print(result+"\n\n\n")'''

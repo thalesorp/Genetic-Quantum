@@ -52,7 +52,6 @@ class Fel():
 
                 self.fel.insert(pos, evento)
 
-
     def desagenda_evento(self, processoId, cpuId):
         ''' Desagenda Evento. '''
         for i in range(len(self.fel)):
@@ -89,29 +88,31 @@ class Fel():
                     print("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tCAIU AQUI!")
                     return'''
 
+            #print("-----> EVENTO:", evento)
+
             # Fim da chegada de processos na CPU. (?)
             if evento[0] == 1:
-                output = "Evento " + str(evento[0]) + ": fimChegadaProcessoCPU."
-                print(output)
+                output = "Evento " + str(evento[0]) + ": fimChegadaProcessoCPU." + "\tprocessoId: " + str(processoId)
+                #print(output)
                 lista_eventos = self.eventos.fimChegadaProcessoCPU(self.tempo, processoId)
 
             # Fim da execução na CPU.
             elif evento[0] == 2:
-                output = "Evento " + str(evento[0]) + ": fimExecutaCPU."
-                print(output)
+                output = "Evento " + str(evento[0]) + ": fimExecutaCPU." + "\tprocessoId: " + str(processoId)
+                #print(output)
                 cpuId = evento[3]
                 lista_eventos = self.eventos.fimExecutaCPU(self.tempo, processoId, cpuId)
 
             # Fim da execução de IO. (?)
             elif evento[0] == 3:
-                output = "Evento " + str(evento[0]) + ": fimExecutaIO."
-                print(output)
+                output = "Evento " + str(evento[0]) + ": fimExecutaIO." + "\tprocessoId: " + str(processoId)
+                #print(output)
                 lista_eventos = self.eventos.fimExecutaIO(self.tempo, processoId)
 
             # Fim de encerra processo. (?)
             elif evento[0] == 4:
-                output = "Evento " + str(evento[0]) + ": fimEncerraProcesso."
-                print(output)
+                output = "Evento " + str(evento[0]) + ": fimEncerraProcesso." + "\tprocessoId: " + str(processoId)
+                #print(output)
                 lista_eventos = self.eventos.fimEncerraProcesso(self.tempo, processoId)
 
             #print("Lista de eventos para agendar:", lista_eventos)
