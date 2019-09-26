@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ################################################################################
 #                                                                              #
@@ -7,8 +6,7 @@
 #                                                                              #
 #  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
 #                                                                              #
-#  Contact:                                                                    #
-#    Thales Otávio | @ThalesORP | ThalesORP@gmail.com                          #
+#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
 #                                                                              #
 ################################################################################
 
@@ -19,10 +17,9 @@ import random
 
 from .individual import Individual
 
-class Population(object):
+class Population():
     '''Class of population of indiviuals, used by NSGA-II.'''
 
-    # Constructor
     def __init__(self, population_size, offspring_size):
         random.seed(1)
 
@@ -34,10 +31,10 @@ class Population(object):
 
         self.individuals = list()
 
-        # List with all fronts: each front contains the indexes of the individuals in "self.individuals".
+        # List with all fronts: each front contains the indexes of the
+        #   individuals in "self.individuals".
         self.fronts = list()
 
-    # Methods
     def initiate(self):
         ''' Initialize a new population.'''
         for _ in range(self.population_size):
@@ -62,8 +59,6 @@ class Population(object):
         for front in self.fronts:
             front.sort(key=lambda x: x.crowding_distance, reverse=True)
 
-    #^ Ok.
-
     def get_random_individual(self):
         ''' Return a random individual of this population.'''
         population_current_size = self.get_current_population_size()
@@ -74,11 +69,11 @@ class Population(object):
                 if counter == 0:
                     return individual
                 counter -= 1
+        return None
 
     def get_current_population_size(self):
+        ''' Return the size of current population.'''
         return len(self.individuals)
-
-    #^ +/- ok.
 
     def add_to_front(self, index, individual):
         ''' Add the individual into "index" front.'''
@@ -90,8 +85,6 @@ class Population(object):
 
     def add_to_last_front(self, individual):
         ''' Add individual to last front.'''
-        #index = self.individuals.index(individual)
-        #self.fronts[self.get_last_front_index()].append(index)
         self.fronts[self.get_last_front_index()].append(individual)
 
     def get_last_front(self):
@@ -131,7 +124,8 @@ class Population(object):
         i = 1
         for individual in self.individuals:
             #sys.stdout.write("  " + individual.__simple_str__())
-            result += ("  ["+str(i)+"]\tquantum: " + str(individual.chromosome) + "\t" + individual.__simple_str__() + "\n")
+            result += ("  ["+str(i)+"]\tquantum: " + str(individual.chromosome)
+                       + "\t" + individual.__simple_str__() + "\n")
             i += 1
 
         print(result)
@@ -166,39 +160,6 @@ class Population(object):
             sys.stdout.write("Front " + str(i) + ": ")
             i += 1
             for individual in front:
-                sys.stdout.write(str(individual) + ".CD: " + str(individual.crowding_distance) + ", ")
+                sys.stdout.write(str(individual)+ ".CD: "
+                                 + str(individual.crowding_distance) + ", ")
             print("")
-
-    def _show_offspring(self):
-        '''Show individuals of the offspring.'''
-        print("\nOffspring:")
-        for individual in self.offspring:
-            sys.stdout.write(str(individual) + ", ")
-        print("")
-
-    def _show_individuals_from_list(self, individual_list):
-        for individual in individual_list:
-            sys.stdout.write(str(individual) + ', ')
-
-    # Debug
-    def start_new_population_debug(self):
-        '''DEBUG: Initialize a new population.'''
-        self.population = list()
-
-        individual = Individual('A', 3, 3)
-        self.population.append(individual)
-
-        individual = Individual('B', 4, 2)
-        self.population.append(individual)
-
-        individual = Individual('C', 1, 2)
-        self.population.append(individual)
-
-        individual = Individual('D', 1, 1)
-        self.population.append(individual)
-
-        individual = Individual('E', 2, 1)
-        self.population.append(individual)
-
-        individual = Individual('F', 3, 2)
-        self.population.append(individual)

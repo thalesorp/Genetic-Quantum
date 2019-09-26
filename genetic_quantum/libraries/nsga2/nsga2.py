@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ################################################################################
 #                                                                              #
@@ -7,47 +6,44 @@
 #                                                                              #
 #  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
 #                                                                              #
-#  Contact:                                                                    #
-#    Thales Otávio | @ThalesORP | ThalesORP@gmail.com                          #
+#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
 #                                                                              #
 ################################################################################
 
 '''Main class of NSGA-II.'''
 
-import sys
-
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot as plt # pylint: disable=import-error
+import numpy as np # pylint: disable=import-error
 
 from .population import Population
 
-class NSGA2(object):
+class NSGA2():
     '''Main class of the NSGA-II algorithm.'''
 
     def __init__(self, generations, population_size, offspring_size):
-        self.GENERATIONS = generations
-        self.POPULATION_SIZE = population_size
-        self.OFFSPRING_SIZE = offspring_size
+        self.generations = generations
+        self.population_size = population_size
+        self.offspring_size = offspring_size
 
-        self.population = Population(self.POPULATION_SIZE, self.OFFSPRING_SIZE)
+        self.population = Population(self.population_size, self.offspring_size)
 
     # Methods
     def run(self):
         '''Method responsible for running the main loop of NSGA2.
-        Starts with one population of size "POPULATION_SIZE".
-        It's created the children of this population, that will be the quantity of "OFFSPRING_SIZE".
+        Starts with one population of size "population_size".
+        It's created the children of this population, that will be the quantity of "offspring_size".
         The creation of those children is made by crossover and mutation.
         Sort them with: non-dominated sorting.
         Take the best individual according with: crowding distance sorting.
-        "POPULATION_SIZE" is the max size of the new population.
+        "population_size" is the max size of the new population.
         Back to beginning. Repeated N generations.'''
         self.initiate_population()
 
-        for generation in range(self.GENERATIONS):
+        for generation in range(self.generations):
 
             print("\n\nGENERATION:", generation+1)
 
-            self.population._show_individuals()
+            self.population._show_individuals() # pylint: disable=protected-access
 
             print("NON DOMINATED SORTING...")
             self.non_dominated_sorting()
@@ -61,7 +57,7 @@ class NSGA2(object):
             print("MUTATION...")
             self.mutation()
 
-            self.population._show_individuals()
+            self.population._show_individuals() # pylint: disable=protected-access
 
             print("EVALUATING INDIVIDUALS...")
             self.evaluate()
@@ -76,7 +72,7 @@ class NSGA2(object):
 
     def non_dominated_sorting(self):
         ''' Sort the individuals according to they dominance and sort them into fronts.
-        
+
         Everyone check with everyone who dominates who, filling up
         "domination_count" and "dominated_by" attributes of each individual.
         Also, the first front is created.
@@ -86,8 +82,8 @@ class NSGA2(object):
         self.population.new_front()
 
         # Each of individuals checks if dominates or is dominated with everyone else.
-        for i in range(self.POPULATION_SIZE):
-            for j in range(self.POPULATION_SIZE):
+        for i in range(self.population_size):
+            for j in range(self.population_size):
                 current_individual = self.population.individuals[i]
                 other_individual = self.population.individuals[j]
 
@@ -134,8 +130,8 @@ class NSGA2(object):
         quantity_of_fronts = 0
 
         for front in self.population.fronts:
-            # Checking if the quantity of individuals exceeded the limit, wich is OFFSPRING_SIZE.
-            if individual_quantity >= self.OFFSPRING_SIZE:
+            # Checking if the quantity of individuals exceeded the limit, wich is offspring_size.
+            if individual_quantity >= self.offspring_size:
                 quantity_of_fronts += 1
             else:
                 individual_quantity += len(front)
@@ -144,44 +140,25 @@ class NSGA2(object):
             self.population.delete_last_front()
             quantity_of_fronts -= 1
 
+
         # Calculating the crowding distance value for each individual.
 
         solutions_amount = len(front[0].solutions)
 
         for front in self.population.fronts:
-
-            # If there is only one individual in that front,
-            #     there's no need to calculate their crowding distance.
-            '''if len(front) == 1:
-                print("FRONT:", front)
-                print("No need to calculate crowding distance.")
-                continue'''
-
-            #                                                                   <---------- !
             # List of lists: solutions_lists has "solutions_amount" lists. For example:
-            # solutions_lists = [ [1, 24.6], [3, 14.4], [7, 10.5] ]
-            # Each list is a objective function value. In that way, 1, 3 and 7
-            # is the solutions of the first individual.
-
+            # solutions_lists = [ [1, 3], [24.6, 14.4], [746, 324] ]
+            # Each list is a objective function value. In that way, 1, 24.6 and 746
+            # is the solutions of the first individual, and 3, 14.4 and 324 is of
+            # the second individual.
             solutions_lists = list()
 
-            # solutions_lists: [[], [], [], []]
             for i in range(solutions_amount):
                 solutions_list = list()
                 for individual in front:
                     solutions_list.append(individual.solutions[i])
                 solutions_lists.append(solutions_list)
 
-            #print("solutions_lists:", solutions_lists)
-            '''solutions_lists:
-
-            indiv. index:
-             0                     1                     2                     3                    4                     5                    6                    7                     8                    9 
-          [ ['5',                  '5',                  '13',                 '22',                '11',                 '8',                 '4',                 '5',                  '5',                 '6'], 
-            ['229.4',              '148.8',              '184.30769230769232', '84.54545454545455', '162.36363636363637', '215.375',           '178.25',            '172.2',              '161.2',             '156.33333333333334'], 
-            ['96.8063872255489',   '95.53398058252426',  '98.46666666666665',  '93.2806324110672',  '94.41584158415843',  '95.50898203592814', '95.93056346044393', '94.1162109375',      '96.30367419212041', '91.43939393939394'], 
-            ['374.84117647058827', '389.38461538461536', '394.0978260869565',  '340.8632268632268', '287.7833219412167',  '293.8773291925466', '547.9663212435233', '337.33269230769235', '328.0394957983193', '403.3027989821883']]
-            '''
 
             # Getting the data and making the calculation of crowding distance for each individual.
             for i in range(len(front)):
@@ -206,6 +183,7 @@ class NSGA2(object):
                 elif individual_index == (len(solutions_list)-1):
                     right_neighbour_index = (len(solutions_list)-1)
 
+                # Summation of crowding distance of each objective function.
                 for solutions_list in solutions_lists:
                     right_neighbour_value = solutions_list[right_neighbour_index]
                     left_neighbour_value = solutions_list[left_neighbour_index]
@@ -214,9 +192,10 @@ class NSGA2(object):
                     min_value = min(solutions_list)
 
                     individual.crowding_distance += ((right_neighbour_value - left_neighbour_value)
-                                                     / (max_value - min_value) )
+                                                     / (max_value - min_value))
 
         self.population.sort_fronts_by_crowding_distance()
+
 
         # Getting the amount of individuals to delete, and removing them.
 
@@ -244,7 +223,7 @@ class NSGA2(object):
         '''Crossover method.'''
 
         # Getting the quantity of individuals that are needed to create.
-        amount_to_create = self.POPULATION_SIZE - len(self.population.individuals)
+        amount_to_create = self.population_size - len(self.population.individuals)
 
         child_chromosome_list = list()
 
@@ -261,16 +240,12 @@ class NSGA2(object):
 
     def mutation(self):
         '''Mutation method.'''
-        '''
-        Dicidir quantos indivíduos vão sofrer mutação.
+        '''Dicidir quantos indivíduos vão sofrer mutação.
         Sortear X% conforme a aplitude. (population.chromosome_max_value, population.chromosome_min_value)
-        Sortear se será acresentado ou subtraído tal porcentagem do quantum do individuo.
-        '''
-        pass
+        Sortear se será acresentado ou subtraído tal porcentagem do quantum do individuo.'''
 
     def evaluate(self):
         '''How the individuals are evaluated.'''
-        pass
 
     # Plotting
     def _plot_individuals(self):
@@ -346,35 +321,3 @@ class NSGA2(object):
 
         #plt.legend(loc='upper left')
         plt.show()
-
-    # Utils
-    '''def sort_individuals(self, individual_list):
-        #Sort an list of individuals.
-
-        sum_list = list()
-        xy_sum = 0
-        for individual in individual_list:
-            xy_sum = individual.x_value + individual.y_value
-            sum_list.append(xy_sum)
-
-        lowest = None
-        for i in range(len(individual_list)):
-            # Finding the lowest value.
-            lowest_index = 0
-            lowest = sum_list[0]
-            for j in range(1, len(sum_list)):
-                if sum_list[j] < lowest:
-                    lowest_index = j
-                    lowest = sum_list[j]
-
-            # Remove an element from list by index.
-            sum_list.pop(lowest_index)
-            lowest = individual_list.pop(lowest_index)
-            # Insert the lowest to the first available position.
-            sum_list.insert(0, sys.maxsize)
-            individual_list.insert(i, lowest)'''
-
-    def _show_individuals_from_list(self, individual_list):
-        for individual in individual_list:
-            sys.stdout.write(str(individual) + ', ')
-        print()

@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#------------------------------------------------------#
-#         Graduação em Ciência da Computação           #
-#                                                      #
-#    Orientador: Diego Mello Silva                     #
-#    Aluno: Danilo da Silva Alves                      #
-#    Matrícula: 0002749                                #
-#                                                      #
-#------------------------------------------------------#
+################################################################################
+#                                                                              #
+#  SimPro:                                                                     #
+#    Simulador de escalonamento de processos                                   #
+#                                                                              #
+#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#                                                                              #
+#  Orientador: Diego Mello Silva                                               #
+#  Aluno: Danilo da Silva Alves                                                #
+#                                                                              #
+################################################################################
+
+''' Module docstring.'''
 
 from .fila import Fila
 
-class Dispositivo(object):
+class Dispositivo():
+    ''' Class docstring.'''
 
     def __init__(self, ident):
         self.filaIO = Fila()

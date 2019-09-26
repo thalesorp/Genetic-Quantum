@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#------------------------------------------------------#
-#         Graduação em Ciência da Computação           #
-#                                                      #
-#    Orientador: Diego Mello Silva                     #
-#    Aluno: Danilo da Silva Alves                      #
-#    Matrícula: 0002749                                #
-#                                                      #
-#------------------------------------------------------#
+################################################################################
+#                                                                              #
+#  SimPro:                                                                     #
+#    Simulador de escalonamento de processos                                   #
+#                                                                              #
+#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#                                                                              #
+#  Orientador: Diego Mello Silva                                               #
+#  Aluno: Danilo da Silva Alves                                                #
+#                                                                              #
+################################################################################
 
-class CPU(object):
+''' Module docstring.'''
+
+class CPU():
+    ''' Class docstring.'''
 
     def __init__(self, ident=None):
 
@@ -40,7 +45,7 @@ class CPU(object):
         # [ [tempo], [utilização em porcentagem], [utilização em tempo] ]
         self.dicionarioUtilizacao = [[],[],[]]
 
-    def insereUtilizacaoAtual(self,tempo):
+    def insereUtilizacaoAtual(self, tempo):
         #x
         self.dicionarioUtilizacao[0].append(tempo)
         #y
@@ -53,13 +58,13 @@ class CPU(object):
     def getUtilizacao(self):
         return self.dicionarioUtilizacao
 
-    def setTerminoExecucao(self,tempo):
+    def setTerminoExecucao(self, tempo):
         self.terminoExecucao = tempo
 
     def getTerminoExecucao(self):
         return self.terminoExecucao
 
-    def setInicioExecucao(self,tempo):
+    def setInicioExecucao(self, tempo):
         self.inicioExecucao = tempo
 
     def getInicioExecucao(self):
@@ -81,14 +86,14 @@ class CPU(object):
     def recalculaExecucao(self):
         self.dicionarioExecucao[(len(self.dicionarioExecucao)-1):][0][2] = '2018-01-01 ' + self.converteTempo(self.getTerminoExecucao())
 
-    def incOciosidade(self,tempo):
+    def incOciosidade(self, tempo):
         self.totalOciosidade += (tempo - self.tempoAuxiliar)
         self.tempoAuxiliar = tempo
 
     def getTotalOciosidade(self):
         return self.totalOciosidade
 
-    def incExecucao(self,tempo):
+    def incExecucao(self, tempo):
         self.totalExecucao += (tempo - self.tempoAuxiliar)
         self.tempoAuxiliar = tempo
 
@@ -98,22 +103,22 @@ class CPU(object):
     def getCpuId(self):
         return self.cpuId
 
-    def setCpuId(self,ident):
+    def setCpuId(self, ident):
         self.cpuId = ident
-    
+
     def getProcessoAtual(self):
         return self.processoAtual
 
-    def setProcessoAtual(self,processo):
+    def setProcessoAtual(self, processo):
         self.processoAtual = processo
 
     def getDisponivel(self):
         return self.disponivel
 
-    def setDisponivel(self,flag):
+    def setDisponivel(self, flag):
         self.disponivel = flag
 
-    def converteTempo(self,tempo):
+    def converteTempo(self, tempo):
         t1 = int(tempo%60) #00:00:[00]
         aux = int(tempo/60)
         if  aux < 60:

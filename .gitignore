@@ -5,4 +5,7 @@ __pycache__
 # VSCode files
 .vscode
 
+# Pylint configuration file.
+.pylintrc
+
 setup.py

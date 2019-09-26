@@ -1,32 +1,39 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#------------------------------------------------------#
-#         Graduação em Ciência da Computação           #
-#                                                      #
-#    Orientador: Diego Mello Silva                     #
-#    Aluno: Danilo da Silva Alves                      #
-#    Matrícula: 0002749                                #
-#                                                      #
-#------------------------------------------------------#
+################################################################################
+#                                                                              #
+#  SimPro:                                                                     #
+#    Simulador de escalonamento de processos                                   #
+#                                                                              #
+#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#                                                                              #
+#  Orientador: Diego Mello Silva                                               #
+#  Aluno: Danilo da Silva Alves                                                #
+#                                                                              #
+################################################################################
+
+''' Module docstring.'''
 
 import os
 import sys
 import argparse
 
-from .escalonador import Escalonador, RR
+from .escalonador import RR
 from .eventos import Evento
 from .fel import Fel
 
-class SimPro(object):
+class SimPro():
+    ''' Root class of SimPro.'''
 
     def run(self, quantum, scenario, mode):
+        ''' Method docstring.'''
+
         scheduler = RR(quantum)
 
         fel = Fel(scheduler, scenario, mode)
 
         if mode == 'D':
-            while len(fel.fel) > 0:
+            while fel.fel:
                 fel.consome()
 
         elif mode == 'P':
@@ -41,11 +48,13 @@ class SimPro(object):
 
     def run_and_get_results(self, quantum):
         ''' Return one list with all four results of simulation.'''
-        self.run_SimPro(quantum)
+        self.run_simpro(quantum)
         #print("rodou o run_SimPro(quantum)")
         return self.get_last_SimPro_result()
 
-    def run_SimPro(self, quantum):
+    def run_simpro(self, quantum):
+        ''' Method docstring.'''
+
         quantum = quantum
         # Path to scenario file ("probabilistic_scenario_1.txt").
         scenario = "resources/scenarios/probabilistic/probabilistic_scenario_1.txt"
@@ -56,8 +65,9 @@ class SimPro(object):
         #print("self.run(",quantum ,",", scenario ,",", modo,")")
         self.run(quantum, scenario, modo)
 
-    def get_SimPro_results(self):
-        #pasta: /media/thalesorp/Baphomet/Projects/GitHub/Genetic-Quantum/genetic_quantum/resources/SimPro-results
+    def get_simpro_results(self):
+        ''' Method docstring.'''
+
         root_path = os.getcwd()
         #directories_up = 3
         #for _ in range(directories_up):
@@ -76,6 +86,8 @@ class SimPro(object):
                 print("line:", line)
 
     def get_last_SimPro_result(self):
+        ''' Method docstring.'''
+
         root_path = os.getcwd()
         results_folder = root_path + "/resources/SimPro-results"
         result_file = results_folder + "/RR.txt"
@@ -89,20 +101,20 @@ class SimPro(object):
         # Putting the values into a list.
         line = line.split("\t")
         # Converting all values to int, because split turn them to string.
-        line = [ float(value) for value in line ]
+        line = [float(value) for value in line]
 
         return line
 
 
 def main():
+    ''' Method docstring.'''
+
     # Método de escalonamento ("FCFS", "RR"...).
     escalonador = None
     # Arquivo de cenario ("cenarioD1.txt").
     cenario = None
     # Modo probabilístico ou determinístico ("P" ou "D").
     modo = None
-    # Valor de quantum do escaloador Round Robin.
-    quantum = None
     parser = argparse.ArgumentParser()
     parser.add_argument('escalonador', metavar='scheduler', type=str, help='método de escalonamento')
     parser.add_argument('quantum', metavar='quantum', type=int, help='valor de quantum')
@@ -112,7 +124,7 @@ def main():
     escalonador = RR(args['quantum'])
     cenario = args['arquivo']
     modo = args['modo']
-    run(escalonador, cenario, modo)
+    #run(escalonador, cenario, modo)
 
 #import cProfile
 

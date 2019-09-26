@@ -1,16 +1,19 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*- 
+#!/usr/bin/env python3
 
-#------------------------------------------------------#
-#         Graduação em Ciência da Computação           #
-#                                                      #
-#    Orientador: Diego Mello Silva                     #
-#    Aluno: Danilo da Silva Alves                      #
-#    Matrícula: 0002749                                #
-#                                                      #
-#------------------------------------------------------#
+################################################################################
+#                                                                              #
+#  SimPro:                                                                     #
+#    Simulador de escalonamento de processos                                   #
+#                                                                              #
+#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#                                                                              #
+#  Orientador: Diego Mello Silva                                               #
+#  Aluno: Danilo da Silva Alves                                                #
+#                                                                              #
+################################################################################
 
-#from Fila import *
+''' Module docstring.'''
+
 from .fila import Fila
 
 import numpy as np
@@ -18,8 +21,8 @@ import skfuzzy as fuzz
 import time
 from skfuzzy import control as ctrl
 
-
-class Escalonador(object):
+class Escalonador():
+    ''' Class docstring.'''
 
     def __init__(self):
         self.preemptivo = None

@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#------------------------------------------------------#
-#         Graduação em Ciência da Computação           #
-#                                                      #
-#    Orientador: Diego Mello Silva                     #
-#    Aluno: Danilo da Silva Alves                      #
-#    Matrícula: 0002749                                #
-#                                                      #
-#------------------------------------------------------#
+################################################################################
+#                                                                              #
+#  SimPro:                                                                     #
+#    Simulador de escalonamento de processos                                   #
+#                                                                              #
+#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#                                                                              #
+#  Orientador: Diego Mello Silva                                               #
+#  Aluno: Danilo da Silva Alves                                                #
+#                                                                              #
+################################################################################
+
+''' Module docstring.'''
 
 from .fila import Fila
 from .load import Cenario
@@ -16,7 +20,9 @@ from .cpu import CPU
 from .dispositivo import Dispositivo
 from .processo import Processo
 
-class Colecoes(object):
+class Colecoes():
+    ''' Class docstring.'''
+
     CPUs = []
     Dispositivos = []
     Processos = []
@@ -52,7 +58,7 @@ class Colecoes(object):
                 
         return None
 
-    def finalizaProcesso(self,ident):
+    def finalizaProcesso(self, ident):
         for i in range(len(self.Processos)):
             if self.Processos[i].getProcessoId() == ident:
                 self.Finalizados.append(self.Processos[i])
@@ -60,4 +66,3 @@ class Colecoes(object):
                 return
 
         return
-
