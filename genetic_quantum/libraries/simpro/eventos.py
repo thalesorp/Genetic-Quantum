@@ -133,7 +133,7 @@ class Evento():
             self.colecao.Processos.append(p)
 
         emExecucao, cpu = self.escalonador.desempate(p, self.colecao)
-        if emExecucao != None:
+        if emExecucao is not None:
             self.filaDeProntos.insert(emExecucao)
             fel.append([0, emExecucao.getProcessoId(), 1])
             emExecucao.setTerminoExecucao(tempo)
@@ -144,7 +144,7 @@ class Evento():
         # Existe CPU disponível?
         cpu = self.colecao.buscaCpuLivre()
         # Verifica se foi encontrada uma CPU livre.
-        if cpu != None:
+        if cpu is not None:
             processo = self.escalonador.selecionaProcesso(self.filaDeProntos, tempo)
             #agenda na fel ([eventoID,tempo,processoID,cpuID])
             # O processo esperou desde o fim da última execução até agora.
@@ -154,7 +154,7 @@ class Evento():
             cpu.setInicioExecucao(tempo)
             #verificar se o quantum e menor ou maior que o burst atual
             #print("------------------------------> processo ID:", processo.processoId)
-            if (self.quantum != None) and (self.quantum <= processo.getCpuBurstAtual()):
+            if (self.quantum is not None) and (self.quantum <= processo.getCpuBurstAtual()):
                 fel.append([2, (tempo+self.quantum), processo.getProcessoId(), cpu.getCpuId()])
                 processo.setTerminoExecucao(tempo+self.quantum)
                 cpu.setTerminoExecucao(tempo+self.quantum)
@@ -175,7 +175,7 @@ class Evento():
         if (self.preemptivo == True) and (not self.filaDeProntos.empty()):
             #invoca escalonador e recalcula escala
             novo, processoInterrompido, cpuInterrompida = self.escalonador.recalcula(self.filaDeProntos, self.colecao, tempo)
-            if novo != None: #sugere mudanca?
+            if novo is not None: #sugere mudanca?
                 #####################
                 #interrompe processo#
                 #####################
@@ -225,7 +225,7 @@ class Evento():
         processo = self.colecao.buscaProcesso(processoId)
         processo.incExecucao(tempo)
 
-        if self.quantum != None:
+        if self.quantum is not None:
             # No metodo RR, o burst apenas executa durante o tempo de quantum, e não até o fim.
             # Assim, ao fim da execeução da CPU, o processo deve voltar para a fila de prontos.
             # Caso o burst encerre, se inicia uma execução IO. TODO: Ver como implementar isso.

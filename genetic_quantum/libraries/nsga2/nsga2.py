@@ -41,9 +41,9 @@ class NSGA2():
 
         for generation in range(self.generations):
 
-            print("\n\nGENERATION:", generation+1)
+            print("\nGENERATION:", generation+1)
 
-            self.population._show_individuals() # pylint: disable=protected-access
+            #self.population._show_individuals() # pylint: disable=protected-access
 
             print("NON DOMINATED SORTING...")
             self.non_dominated_sorting()
@@ -57,7 +57,7 @@ class NSGA2():
             print("MUTATION...")
             self.mutation()
 
-            self.population._show_individuals() # pylint: disable=protected-access
+            #self.population._show_individuals() # pylint: disable=protected-access
 
             print("EVALUATING INDIVIDUALS...")
             self.evaluate()
@@ -311,8 +311,8 @@ class NSGA2():
         #plt.plot(self.x_values, self.y_values, 'ro')
 
         plt.axis([self.X_MIN_VALUE, self.X_MAX_VALUE, self.Y_MIN_VALUE, self.Y_MAX_VALUE])
-        plt.xticks(np.arange(self.X_MIN_VALUE, self.X_MAX_VALUE+1, 1.0))
-        plt.yticks(np.arange(self.Y_MIN_VALUE, self.Y_MAX_VALUE+1, 1.0))
+        plt.xticks(np.arange(self.X_MIN_VALUE, self.X_MAX_VALUE+1, 5.0))
+        plt.yticks(np.arange(self.Y_MIN_VALUE, self.Y_MAX_VALUE+1, 5.0))
 
         plt.title('Individual fronts')
         chartBox = ax.get_position()

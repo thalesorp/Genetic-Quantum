@@ -28,7 +28,7 @@ class CPU():
         self.inicioExecucao = 0.0
         self.terminoExecucao = 0.0
 
-        if ident != None:
+        if ident is None:
             self.setCpuId(ident)
         else:
             pass

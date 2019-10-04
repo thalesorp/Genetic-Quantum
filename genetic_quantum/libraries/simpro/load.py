@@ -100,3 +100,5 @@ class Cenario():
                 # Dados dos dispositivos.
                 elif linha[0] == 'D' and linha[1] == 'QT':
                     self.nDispositivos = int(linha[2])
+
+        cenario.close()

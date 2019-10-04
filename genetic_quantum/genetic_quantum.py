@@ -14,9 +14,7 @@
 ''' Module docstring.'''
 
 from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error,no-absolute-import
-from libraries.nsga2.individual import Individual # pylint: disable=import-error,no-absolute-import
 from libraries.simpro.simpro import SimPro # pylint: disable=import-error
-
 
 class GeneticQantum(NSGA2):
     ''' Main class of this project.'''
