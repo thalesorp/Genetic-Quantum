@@ -90,7 +90,7 @@ class PRTY(Escalonador):
         return None, None, None
 
     def desempate(self, processo, colecao):
-        if colecao.buscaCpuLivre() is None:
+        if colecao.buscaCpuLivre() == None:
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
                     emExecucao = colecao.buscaProcesso(cpu.getProcessoAtual())
@@ -153,7 +153,7 @@ class SJF(Escalonador):
         return menorProc
 
     def desempate(self, processo, colecao):
-        if colecao.buscaCpuLivre() is None: #Se houver CPU livre, nao precisa de desempate
+        if colecao.buscaCpuLivre() == None: #Se houver CPU livre, nao precisa de desempate
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
                     print((cpu.getDisponivel()))
@@ -218,7 +218,7 @@ class SRT(Escalonador):
             return None,None,None
 
     def desempate(self, processo, colecao):
-        if colecao.buscaCpuLivre() is None:
+        if colecao.buscaCpuLivre() == None:
             for cpu in colecao.CPUs:
                 if not cpu.getDisponivel():
                     print((cpu.getDisponivel()))
@@ -416,7 +416,7 @@ class IFCS(Escalonador):
         filaDeProntos.queue = sorted(filaDeProntos.queue, key = lambda processo: processo.getPrioridadeDinamica(), reverse = True)
 
     def desempate(self, processo, colecao):
-        if colecao.buscaCpuLivre() is None:
+        if colecao.buscaCpuLivre() == None:
             lista = Fila()
             for p in colecao.Processos:
                 if (p.getChegada() <= processo.getChegada()) and (len(p.getBursts())>0):
@@ -488,7 +488,7 @@ class PFCS(Escalonador):
             filaDeProntos.queue = sorted(filaDeProntos.queue, key = lambda processo: processo.getPrioridadeDinamica(), reverse = True)               
 
     def desempate(self, processo, colecao):
-        if colecao.buscaCpuLivre() is None:
+        if colecao.buscaCpuLivre() == None:
             lista = Fila()
             for p in colecao.Processos:
                 if (p.getChegada() <= processo.getChegada()) and (len(p.getBursts())>0):
