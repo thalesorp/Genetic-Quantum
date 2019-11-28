@@ -25,21 +25,22 @@ from .population import Population
 class NSGA2():
     '''Main class of the NSGA-II algorithm.'''
 
-    # "ZDT1", "ZDT2", "GQ".
-    TEST_PROBLEM = "ZDT1"
+    # "ZDT1", "ZDT2", "ZDT3" "GQ".
+    TEST_PROBLEM = "ZDT3"
 
-    GENERATIONS = 250
+    GENERATIONS = 750
 
     # "N" on NSGA-II paper.
     POPULATION_SIZE = 100
 
     # Distribution index. "nc" in NSGA-II paper.
-    CROSSOVER_CONSTANT = 30
+    CROSSOVER_CONSTANT = 5
 
     # Crossover probability. "pc" in NSGA-II paper.
     CROSSOVER_RATE = 0.9
 
-    # Size of genome list. For Genetic Quantum, this value must be 1.
+    # Size of genome list.
+    # For Genetic Quantum, this value must be 1.
     GENOTYPE_QUANTITY = 30
 
     GENOME_MIN_VALUE = 0
@@ -61,17 +62,21 @@ class NSGA2():
     def run(self):
         '''Method responsible for running the main loop of NSGA-II.'''
 
+        debug = True
+
         print("GENERATION 0")
 
         # Creating a parent population P0.
         self.initiate_population()
 
         fronts = self.fast_non_dominated_sort()
-        #self._show_fronts(fronts)
+        if debug: self._show_fronts(fronts)
 
         # "Q0" on NSGA-II paper.
         offspring_population = self.usual_crossover()
         self.evaluate(offspring_population)
+
+        self._save_plot(0, fronts)
 
         for i in range(self.GENERATIONS):
             print("GENERATION", i+1)
@@ -81,7 +86,7 @@ class NSGA2():
 
             # "F" on NSGA-II paper.
             fronts = self.fast_non_dominated_sort()
-            #self._show_fronts(fronts)
+            if debug: self._show_fronts(fronts)
 
             self._save_plot(i+1, fronts)
 
@@ -315,8 +320,6 @@ class NSGA2():
         ''' Create a offspring population using the simulated binary crossover (SBX)
         and the usual binary tournament selection.'''
 
-        # TODO: Call mutation function.
-
         genomes_list = list()
 
         # Getting the quantity of individuals that are needed to create.
@@ -324,7 +327,7 @@ class NSGA2():
         amount_to_create = self.POPULATION_SIZE
 
         # "step = 2" because each iteration generates two children.
-        for i in range(0, amount_to_create, 2):
+        for _ in range(0, amount_to_create, 2):
 
             parent1 = self.usual_tournament_selection()
             parent2 = self.usual_tournament_selection()
@@ -339,7 +342,7 @@ class NSGA2():
 
         # Adding the new children on that.
         for child_genome in genomes_list:
-            offspring_population.new_individual(child_genome)
+            offspring_population.new_individual(self.mutation(child_genome))
 
         return offspring_population
 

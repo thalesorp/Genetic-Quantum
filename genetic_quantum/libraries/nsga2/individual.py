@@ -64,10 +64,10 @@ class Individual():
                 + "\t" + self.__str_genome__()
                 + "\t" + self.__str_solutions__()
                 + "\tRank:" + str(self.rank)
-                + "\tC.D.:" + self.__str_crowding_distance__())
+                + "\tC.D.:" + self.__str_crowding_distance__()
                 #+ "\tDom.count:" + str(self.domination_count)
-                #+ "\tDom.by:" + self.__str_dominated_by__())
-
+                #+ "\tDom.by:" + self.__str_dominated_by__()
+                )
         return result
 
     def __str_genome__(self):
@@ -75,6 +75,10 @@ class Individual():
             return "[]"
 
         result = "["
+
+        if len(self.genome) == 1:
+            result += '%.2f'%(self.genome[0]) + "]"
+            return result
 
         for i in range(len(self.genome)-1):
             result += '%.2f'%(self.genome[i]) + " "
