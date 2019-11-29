@@ -17,7 +17,7 @@ import numpy as np
 import random
 import imageio
 import os
-# Used to get "sys.maxsize", the pseudo infinite.
+# Used to get "sys.maxsize", the infinite value.
 import sys
 
 from .population import Population
@@ -26,7 +26,7 @@ class NSGA2():
     '''Main class of the NSGA-II algorithm.'''
 
     # "ZDT1", "ZDT2", "ZDT3" "GQ".
-    TEST_PROBLEM = "ZDT3"
+    TEST_PROBLEM = "ZDT1"
 
     GENERATIONS = 750
 
@@ -34,7 +34,7 @@ class NSGA2():
     POPULATION_SIZE = 100
 
     # Distribution index. "nc" in NSGA-II paper.
-    CROSSOVER_CONSTANT = 5
+    CROSSOVER_CONSTANT = 20
 
     # Crossover probability. "pc" in NSGA-II paper.
     CROSSOVER_RATE = 0.9
@@ -50,10 +50,10 @@ class NSGA2():
     MUTATION_RATE = 1/GENOTYPE_QUANTITY
 
     # Percentage of chance to disturbing one genotype of genome.
-    GENOTYPE_MUTATION_PROBABILITY  = 0.5
+    GENOTYPE_MUTATION_PROBABILITY = 0.5
 
     # Percentage to disturb each genotype mutated.
-    DISTURB_PERCENT = 50
+    DISTURB_PERCENT = 0.5
 
     def __init__(self):
         # "Rt" on NSGA-II paper.
@@ -62,7 +62,7 @@ class NSGA2():
     def run(self):
         '''Method responsible for running the main loop of NSGA-II.'''
 
-        debug = True
+        debug = False
 
         print("GENERATION 0")
 
@@ -75,8 +75,6 @@ class NSGA2():
         # "Q0" on NSGA-II paper.
         offspring_population = self.usual_crossover()
         self.evaluate(offspring_population)
-
-        self._save_plot(0, fronts)
 
         for i in range(self.GENERATIONS):
             print("GENERATION", i+1)
@@ -193,12 +191,6 @@ class NSGA2():
             # Reseting this value because it's a new generation.
             for individual in population.individuals:
                 individual.crowding_distance = 0
-
-            '''# If the population has only one individual, he receives the "infinite" value of crowding distance.
-            if population.size == 1:
-                population.individuals[0].crowding_distance = sys.maxsize
-                print("IN CROWDING DISTANCE CALCULATION: Only one individual!")
-                #continue'''
 
             for genome_index in range(self.GENOTYPE_QUANTITY):
 
@@ -426,23 +418,17 @@ class NSGA2():
         # Checking if mutation will or not occur.
         if value > self.MUTATION_RATE:
             # When mutation doesn't occur, nothing happens.
-            if debug: print("\n", value, "Mutation DOENS'T occur.")
             return genome
-
-        if debug: print("\n", value, "Mutation occur.")
-        if debug: print("Old genome:", genome)
 
         for i in range(len(genome)):
             # Mutate that genotype.
             if random.random() < self.GENOTYPE_MUTATION_PROBABILITY:
 
-                value = (self.DISTURB_PERCENT * genome[i]) / 100.0
+                value = self.DISTURB_PERCENT * genome[i]
 
                 # Will it add or decrease?
                 if random.random() < 0.5:
                     value = -value
-
-                if debug: print("Mutating the genotype", genome[i], " with: value =", value)
 
                 genome[i] = genome[i] + value
 
@@ -451,8 +437,6 @@ class NSGA2():
                     genome[i] = self.GENOME_MAX_VALUE
                 elif genome[i] < self.GENOME_MIN_VALUE:
                     genome[i] = self.GENOME_MIN_VALUE
-
-        if debug: print("New genome:", genome)
 
         return genome
 
