@@ -211,3 +211,5 @@ class GeneticQantum(NSGA2):
             self.color_counter = 0
 
         return self.colors[self.color_counter]
+
+GeneticQantum().run()
