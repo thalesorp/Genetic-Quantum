@@ -3,19 +3,23 @@
 ################################################################################
 #                                                                              #
 #  Genetic quantum:                                                            #
-#    Finding the best quantum to Round-robin scheduling with NSGA-II.          #
+#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
 #                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#  Instituto Federal de Minas Gerais - Campus Formiga                          #
+#  Brazil, 2021                                                                #
 #                                                                              #
-#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
+#  Author: Thales Otávio                                                       #
+#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
 #                                                                              #
 ################################################################################
 
-''' Module docstring.'''
+'''Root file of this project.'''
 
-from libraries.nsga2.nsga2 import NSGA2 # pylint: disable=import-error,no-absolute-import
-from libraries.nsga2.individual import Individual # pylint: disable=import-error,no-absolute-import
-from libraries.simpro.simpro import SimPro # pylint: disable=import-error
+from libraries.nsga2.nsga2 import NSGA2
+from libraries.nsga2.individual import Individual
+from libraries.simpro.simpro import SimPro
+
+from simulator import Simulator
 
 from math import sqrt, sin, pi
 
@@ -24,26 +28,44 @@ import numpy as np
 import random
 import imageio
 import os
+import datetime
 
 class GeneticQantum(NSGA2):
-    ''' Main class of this project.'''
+    '''Main class of this project.'''
+
+    # "ZDT1", "ZDT2", "ZDT3" or "GQ".
+    TEST_PROBLEM = "GQ"
+
+    #SCENARIO = "resources/scenarios/Dataset-0_Case-0.txt"
+    SCENARIO = "resources/scenarios/Dataset-1_Case-1.txt"
+    #SCENARIO = "resources/scenarios/Dataset-2_Case-1.txt"
 
     def __init__(self):
         # Calling the parent constructor.
         super().__init__()
 
-        self.FOLDER = self.TEST_PROBLEM + "-plots/"
+        self.PLOTS_FOLDER = "resources/" + self.TEST_PROBLEM + "-plots/"
         self.FILE_PREFIX = "Img_"
         self.FILE_FORMAT = ".png"
 
         self.color_counter = -1
         self.colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko']
 
-        self.simulator = SimPro()
+        self.simulator = Simulator(self.SCENARIO)
 
     # NSGA-II.
     def evaluate(self, population):
         '''How the individuals are evaluated.'''
+
+        if self.TEST_PROBLEM.upper() == "GQ":
+            for individual in population.individuals:
+                # Evaluating only the individuals that doesn't have been evaluated before.
+                if not individual.solutions:
+                    quantum = individual.genome[0]
+
+                    solutions = self.simulator.run(quantum)
+                    individual.solutions = solutions
+                    #print("Evaluation -> " + str(solutions) + " " + "Q=" + str(quantum))
 
         if self.TEST_PROBLEM.upper() == "ZDT1":
             for individual in population.individuals:
@@ -63,14 +85,7 @@ class GeneticQantum(NSGA2):
                 if not individual.solutions:
                     individual.solutions = self.zdt3(individual.genome)
 
-        if self.TEST_PROBLEM.upper() == "GQ":
-            for individual in population.individuals:
-                # Evaluating only the individuals that doesn't have been evaluated before.
-                if not individual.solutions:
-                    quantum = individual.genome[0]
-                    individual.solutions = self.simulator.run_and_get_results(quantum)
-
-# Fitness function.
+    # Fitness function.
     def zdt1(self, x):
         n = len(x)
 
@@ -108,9 +123,20 @@ class GeneticQantum(NSGA2):
         return [f1, f2]
 
     # Plotting.
+    def _generate_results(self):
+
+        # TODO: remove this!
+        foo = 1
+
+        # Adding the date and time to the results file.
+        #self._rename_result_file()
+
+        # Generate the final gif with the plots of each generation.
+        #self._generate_gif()
+
     def _save_plot(self, file_number, fronts):
 
-        file_name = self.FOLDER + self.FILE_PREFIX + str(file_number) + self.FILE_FORMAT
+        file_name = self.PLOTS_FOLDER + self.FILE_PREFIX + str(file_number) + self.FILE_FORMAT
 
         plt.title(self.TEST_PROBLEM)
 
@@ -185,25 +211,42 @@ class GeneticQantum(NSGA2):
         ax.set_position([chartBox.x0, chartBox.y0, chartBox.width*0.6, chartBox.height])
         ax.legend(loc='upper center', bbox_to_anchor=(1.45, 0.8), shadow=True, ncol=1)
 
-        if not os.path.exists(str(self.TEST_PROBLEM + "-plots")):
-            os.makedirs(str(self.TEST_PROBLEM + "-plots"))
+        if not os.path.exists(str(self.PLOTS_FOLDER)):
+            os.makedirs(str(self.PLOTS_FOLDER))
 
         plt.savefig(file_name)
         plt.close()
+
+    def _rename_result_file(self):
+        '''Adding the date and time to the results file.'''
+
+        root_path = os.getcwd()
+        results_folder = root_path + "\\resources\\SimPro-results\\"
+
+        # Slicing the file name to get the scenario name
+        scenario_name = self.SCENARIO.rsplit('/', 1)[1].rsplit('.', 1)[0]
+
+        result_file_name = results_folder + scenario_name + "_results.txt"
+
+        # Renaming the output file name with SCENARIO + DATE + TIME
+        now = datetime.datetime.now()
+        new_result_file_name = str(results_folder + now.strftime('%Y-%m-%d_%H-%M-%S_') + scenario_name + "_results" + '.txt')
+
+        os.rename(result_file_name, new_result_file_name)
 
     def _generate_gif(self):
         images = []
         filenames = []
         for i in range(self.GENERATIONS):
-            filenames.append(self.FOLDER + self.FILE_PREFIX + str(i+1) + self.FILE_FORMAT)
+            filenames.append(self.PLOTS_FOLDER + self.FILE_PREFIX + str(i+1) + self.FILE_FORMAT)
 
         for filename in filenames:
             images.append(imageio.imread(filename))
 
-        imageio.mimsave(self.FOLDER + self.FILE_PREFIX + '0.gif', images, duration=0.6)
+        imageio.mimsave(self.PLOTS_FOLDER + self.FILE_PREFIX + '0.gif', images, duration=0.6)
 
     def _next_color(self):
-        ''' Return next color for plotting.'''
+        '''Return next color for plotting.'''
 
         self.color_counter += 1
 
@@ -212,4 +255,8 @@ class GeneticQantum(NSGA2):
 
         return self.colors[self.color_counter]
 
+import time
+start_time = time.time()
 GeneticQantum().run()
+#GeneticQantum().round_robin(1000, True)
+print("--- %s seconds ---" % (time.time() - start_time))

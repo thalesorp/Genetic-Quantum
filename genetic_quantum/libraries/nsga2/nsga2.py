@@ -2,11 +2,14 @@
 
 ################################################################################
 #                                                                              #
-#  NSGA-II: Non-dominated Sorting Genetic Algorithm II                         #
+#  Genetic quantum:                                                            #
+#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
 #                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#  Instituto Federal de Minas Gerais - Campus Formiga                          #
+#  Brazil, 2021                                                                #
 #                                                                              #
-#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
+#  Author: Thales Otávio                                                       #
+#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
 #                                                                              #
 ################################################################################
 
@@ -25,26 +28,23 @@ from .population import Population
 class NSGA2():
     '''Main class of the NSGA-II algorithm.'''
 
-    # "ZDT1", "ZDT2", "ZDT3" "GQ".
-    TEST_PROBLEM = "ZDT1"
-
-    GENERATIONS = 750
+    GENERATIONS = 5
 
     # "N" on NSGA-II paper.
-    POPULATION_SIZE = 100
+    POPULATION_SIZE = 1000
 
     # Distribution index. "nc" in NSGA-II paper.
-    CROSSOVER_CONSTANT = 20
+    CROSSOVER_CONSTANT = 5
 
     # Crossover probability. "pc" in NSGA-II paper.
     CROSSOVER_RATE = 0.9
 
     # Size of genome list.
     # For Genetic Quantum, this value must be 1.
-    GENOTYPE_QUANTITY = 30
+    GENOTYPE_QUANTITY = 1
 
-    GENOME_MIN_VALUE = 0
-    GENOME_MAX_VALUE = 1
+    GENOME_MIN_VALUE = 1
+    GENOME_MAX_VALUE = 50
 
     # Mutation probability. "pm" in NSGA-II paper.
     MUTATION_RATE = 1/GENOTYPE_QUANTITY
@@ -63,11 +63,13 @@ class NSGA2():
         '''Method responsible for running the main loop of NSGA-II.'''
 
         debug = False
+        plot = False
 
         print("GENERATION 0")
 
         # Creating a parent population P0.
-        self.initiate_population()
+        self.population.initiate(self.POPULATION_SIZE//2)
+        self.evaluate(self.population)
 
         fronts = self.fast_non_dominated_sort()
         if debug: self._show_fronts(fronts)
@@ -86,7 +88,7 @@ class NSGA2():
             fronts = self.fast_non_dominated_sort()
             if debug: self._show_fronts(fronts)
 
-            self._save_plot(i+1, fronts)
+            if plot: self._save_plot(i+1, fronts)
 
             self.crowding_distance_assignment(fronts)
 
@@ -112,21 +114,20 @@ class NSGA2():
             offspring_population = self.crossover()
             self.evaluate(offspring_population)
 
-        self._generate_gif()
+        self._generate_results()
+
+    def evaluate(self, population):
+        '''This method should be implemented by the heir class.'''
+
+        pass
 
     def new_population(self):
-        ''' Return a empty Population object.'''
+        '''Return a empty Population object.'''
 
         return Population(self.GENOTYPE_QUANTITY, self.GENOME_MIN_VALUE, self.GENOME_MAX_VALUE)
 
-    def initiate_population(self):
-        ''' Initiate the population of NSGA-II.'''
-
-        self.population.initiate(self.POPULATION_SIZE//2)
-        self.evaluate(self.population)
-
     def fast_non_dominated_sort(self):
-        ''' Sort the individuals according to they dominance and sort them into fronts.
+        '''Sort the individuals according to they dominance and sort them into fronts.
         Everyone check with everyone who dominates who, filling up
         "domination_count" and "dominated_by" attributes of each individual.
         Also, the first front is created.
@@ -158,7 +159,7 @@ class NSGA2():
                     fronts[0].insert(current_individual)
 
         # Temporary front.
-        current_front = self.new_population()
+        #current_front = self.new_population()
 
         i = 0
         while len(fronts[i].individuals) > 0:
@@ -182,7 +183,7 @@ class NSGA2():
         return fronts
 
     def crowding_distance_assignment(self, fronts):
-        ''' Calculates the crowding distance value of each individual.'''
+        '''Calculates the crowding distance value of each individual.'''
 
         for population in fronts:
 
@@ -192,6 +193,7 @@ class NSGA2():
             for individual in population.individuals:
                 individual.crowding_distance = 0
 
+            genome_index = 0
             for genome_index in range(self.GENOTYPE_QUANTITY):
 
                 # Sorting current population (front) according to the current objective (genome).
@@ -210,13 +212,14 @@ class NSGA2():
 
                     # population.individuals[i].crowding_distance += ((right_neighbour_value - left_neighbour_value) / (max_value - min_value))
                     if (max_value - min_value) == 0:
-                        print("IN CROWDING DISTANCE: division by zero!")
+                        # TODO: warning: IN CROWDING DISTANCE: division by zero!
+                        #print("IN CROWDING DISTANCE: division by zero!")
                         population.individuals[i].crowding_distance += ((right_neighbour_value - left_neighbour_value) / 1)
                     else:
                         population.individuals[i].crowding_distance += ((right_neighbour_value - left_neighbour_value) / (max_value - min_value))
 
     def crowded_comparison(self, individual_A, individual_B):
-        ''' Return the best individual according to the crowded comparison operator
+        '''Return the best individual according to the crowded comparison operator
         in NSGA-II paper.'''
 
         if ((individual_A.rank < individual_B.rank)
@@ -226,7 +229,7 @@ class NSGA2():
         return individual_B
 
     def sort_by_crowded_comparison(self, population):
-        ''' Sort "population" with crowded comparison operator. Bubble sort.'''
+        '''Sort "population" with crowded comparison operator. Bubble sort.'''
 
         for i in range(len(population.individuals)-2):
 
@@ -244,7 +247,7 @@ class NSGA2():
         population.individuals.append(worst)
 
     def tournament_selection(self):
-        ''' Binary tournament selection according to crowded comparison operator.'''
+        '''Binary tournament selection according to crowded comparison operator.'''
 
         first_candidate = self.population.get_random_individual()
         second_candidate = self.population.get_random_individual()
@@ -252,7 +255,7 @@ class NSGA2():
         return self.crowded_comparison(first_candidate, second_candidate)
 
     def usual_tournament_selection(self):
-        ''' Usual binary tournament selection.'''
+        '''Usual binary tournament selection.'''
 
         first_candidate = self.population.get_random_individual()
         second_candidate = self.population.get_random_individual()
@@ -273,8 +276,8 @@ class NSGA2():
         return second_candidate
 
     def crossover(self):
-        ''' Create a offspring population using the simulated binary crossover (SBX)
-        and the binary tournament selection according to the crowded comparison operator..'''
+        '''Create a offspring population using the simulated binary crossover (SBX)
+        and the binary tournament selection according to the crowded comparison operator.'''
 
         genomes_list = list()
 
@@ -309,7 +312,7 @@ class NSGA2():
         return offspring_population
 
     def usual_crossover(self):
-        ''' Create a offspring population using the simulated binary crossover (SBX)
+        '''Create a offspring population using the simulated binary crossover (SBX)
         and the usual binary tournament selection.'''
 
         genomes_list = list()
@@ -339,7 +342,7 @@ class NSGA2():
         return offspring_population
 
     def simulated_binary_crossover(self, parent1, parent2):
-        ''' Simulated binary crossover (SBX).'''
+        '''Simulated binary crossover (SBX).'''
 
         # Distribution index. "nc" in NSGA-II paper.
         crossover_constant = self.CROSSOVER_CONSTANT
@@ -351,11 +354,13 @@ class NSGA2():
 
             # Each genotype has a 50% chance of changing its value.
             # TODO: This should be removed when dealing with one-dimensional solutions.
+            '''
             if (random.random() > 0.5) and (self.GENOTYPE_QUANTITY != 1):
                 # In this case, the children will get the value of the parents.
                 child1_genome.append(parent1.genome[j])
                 child2_genome.append(parent2.genome[j])
                 continue
+            '''
 
             # "y1" is the lowest value between parent1 and parent2. "y2" gets the other value.
             if (parent1.genome[j] < parent2.genome[j]):
@@ -408,8 +413,6 @@ class NSGA2():
 
     def mutation(self, genome):
         '''Mutation method.'''
-
-        debug = False
 
         random.seed()
 

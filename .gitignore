@@ -9,3 +9,5 @@ __pycache__
 .pylintrc
 
 setup.py
+
+genetic_quantum/resources/scenarios

@@ -2,11 +2,14 @@
 
 ################################################################################
 #                                                                              #
-#  NSGA-II: Non-dominated Sorting Genetic Algorithm II                         #
+#  Genetic quantum:                                                            #
+#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
 #                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#  Instituto Federal de Minas Gerais - Campus Formiga                          #
+#  Brazil, 2021                                                                #
 #                                                                              #
-#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
+#  Author: Thales Otávio                                                       #
+#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
 #                                                                              #
 ################################################################################
 
@@ -21,7 +24,7 @@ class Population():
     '''Class of population of indiviuals, used by NSGA-II.'''
 
     def __init__(self, genotype_quantity, genome_min_value, genome_max_value):
-        random.seed(123)
+        random.seed()
 
         # Size of genome list.
         self.genotype_quantity = genotype_quantity
@@ -34,7 +37,7 @@ class Population():
         self.individuals = list()
 
     def initiate(self, n_individuals):
-        ''' Initialize a new population.'''
+        '''Initialize a new population.'''
 
         for _ in range(n_individuals):
             genome = list()
@@ -46,31 +49,31 @@ class Population():
             self.new_individual(genome)
 
     def new_individual(self, genome):
-        ''' Create a new individual with "genome" and insert into population.'''
+        '''Create a new individual with "genome" and insert into population.'''
 
         self.insert(Individual(genome))
 
     def insert(self, individual):
-        ''' Insert a new individual into population.'''
+        '''Insert a new individual into population.'''
 
         self.individuals.append(individual)
         self.size += 1
 
     def delete_individual(self, individual):
-        ''' Delete "individual" from population.'''
+        '''Delete "individual" from population.'''
 
         self.individuals.remove(individual)
         self.size -= 1
 
     def union(self, population):
-        ''' Union operation over "population" and current population.'''
+        '''Union operation over "population" and current population.'''
 
         for individual in population.individuals:
             self.insert(individual)
 
     # Front utils.
     def reset_fronts(self):
-        ''' Delete all fronts and prepare the population to be sorted in fronts.'''
+        '''Delete all fronts and prepare the population to be sorted in fronts.'''
 
         for individual in self.individuals:
             individual.domination_count = 0
@@ -79,39 +82,39 @@ class Population():
         self.fronts = list()
 
     def new_front(self):
-        ''' Start a new front.'''
+        '''Start a new front.'''
 
         self.fronts.append([])
 
     def get_random_individual(self):
-        ''' Return a random individual of this population.'''
+        '''Return a random individual of this population.'''
 
         index = random.randint(0, self.size-1)
 
         return self.individuals[index]
 
     def add_to_front(self, index, individual):
-        ''' Add the individual into "index" front.'''
+        '''Add the individual into "index" front.'''
 
         self.fronts[index].append(individual)
 
     def get_last_front_index(self):
-        ''' Retun the index of last front.'''
+        '''Retun the index of last front.'''
 
         return len(self.fronts)-1
 
     def add_to_last_front(self, individual):
-        ''' Add individual to last front.'''
+        '''Add individual to last front.'''
 
         self.fronts[self.get_last_front_index()].append(individual)
 
     def get_last_front(self):
-        ''' Return the last front.'''
+        '''Return the last front.'''
 
         return self.fronts[len(self.fronts)-1]
 
     def delete_individual_from_last_front(self, individual):
-        ''' Deletes the individual from front AND from individuals list.'''
+        '''Deletes the individual from front AND from individuals list.'''
 
         # Deleting from last front the individual with index = "index".
         last_front = self.get_last_front()
@@ -132,7 +135,7 @@ class Population():
 
     # Crowding Distance utils.
     def get_neighbour(self, individual_genome, front_index, genome_index):
-        ''' Return the left and right neighbour values of "individual_genome".'''
+        '''Return the left and right neighbour values of "individual_genome".'''
 
         genome_list = list()
 
@@ -158,7 +161,7 @@ class Population():
         return genome_list[left_neighbour_index], genome_list[right_neighbour_index]
 
     def get_extreme_neighbours(self, genome_index):
-        ''' Return the highest and lowest neighbour values of "individual_genome".'''
+        '''Return the highest and lowest neighbour values of "individual_genome".'''
 
         genome_list = list()
 

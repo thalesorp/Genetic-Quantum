@@ -2,11 +2,14 @@
 
 ################################################################################
 #                                                                              #
-#  NSGA-II: Non-dominated Sorting Genetic Algorithm II                         #
+#  Genetic quantum:                                                            #
+#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
 #                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga, 2019                    #
+#  Instituto Federal de Minas Gerais - Campus Formiga                          #
+#  Brazil, 2021                                                                #
 #                                                                              #
-#  Contact: Thales Otávio | @ThalesORP | ThalesORP@gmail.com                   #
+#  Author: Thales Otávio                                                       #
+#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
 #                                                                              #
 ################################################################################
 
@@ -60,8 +63,11 @@ class Individual():
         return (first_half and second_half)
 
     def __str__(self):
+        name_tab = "\t"
+        if len(self.name) > 4:
+            name_tab = "\t\t"
         result = (self.name
-                + "\t" + self.__str_genome__()
+                + name_tab + self.__str_genome__()
                 + "\t" + self.__str_solutions__()
                 + "\tRank:" + str(self.rank)
                 + "\tC.D.:" + self.__str_crowding_distance__()

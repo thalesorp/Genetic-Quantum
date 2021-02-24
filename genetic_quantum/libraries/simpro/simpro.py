@@ -25,48 +25,45 @@ from .fel import Fel
 class SimPro():
     ''' Root class of SimPro.'''
 
-    def run(self, quantum, scenario, mode):
-        ''' Method docstring.'''
+    def run(self, quantum, scenario):
+        ''' Run the simulation with minimum requirements to execute RR scheduler.'''
 
         scheduler = RR(quantum)
+        fel = Fel(scheduler, scenario, "D")
 
-        fel = Fel(scheduler, scenario, mode)
+        while fel.fel:
+            fel.consome()
 
-        if mode == 'D':
-            while fel.fel:
-                fel.consome()
-
-        elif mode == 'P':
-            while fel.tempo < fel.eventos.tempoSimulacao:
-                output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
-                #print(output)
-                fel.consome()
-
-        output = "\nTempo de simulação " + str(fel.tempo) + "/" + str(fel.eventos.tempoSimulacao)
-        #print(output)
         fel.fim_execucao()
 
-    def run_and_get_results(self, quantum):
-        ''' Return one list with all four results of simulation.'''
-        self.run_simpro(quantum)
-        #print("rodou o run_SimPro(quantum)")
-        return self.get_last_SimPro_result()
-
-    def run_simpro(self, quantum):
+    def get_last_result(self, scenario):
         ''' Method docstring.'''
 
-        quantum = quantum
-        # Path to scenario file ("probabilistic_scenario_1.txt").
-        scenario = "resources/scenarios/probabilistic/probabilistic_scenario_1.txt"
-        #scenario = "resources/scenarios/deterministic/deterministic_scenario_2.txt"
-        # Probabilistic or deterministic mode ("P" or "D").
-        modo = "P"
-        #modo = "D"
-        #print("self.run(",quantum ,",", scenario ,",", modo,")")
-        self.run(quantum, scenario, modo)
+        root_path = os.getcwd()
+        results_folder = root_path + "\\resources\\SimPro-results\\"
 
+        scenario_name = str(scenario).rsplit('/', 1)[1].rsplit('.', 1)[0]
+
+        result_file_name = results_folder + scenario_name + "_results.txt"
+
+        with open(result_file_name) as f:
+            for line in f:
+                pass
+
+        # Removing "\n" in the end of line.
+        line = line.rstrip()
+        # Putting the values into a list.
+        line = line.split("\t")
+        # Converting all values to int, because split turn them to string.
+        line = [float(value) for value in line]
+
+        return line
+
+################################################################################
+
+# DEPRECATED
+'''
     def get_simpro_results(self):
-        ''' Method docstring.'''
 
         root_path = os.getcwd()
         #directories_up = 3
@@ -84,30 +81,9 @@ class SimPro():
                 # Putting the values into a list.
                 line = line.split("\t")
                 print("line:", line)
-
-    def get_last_SimPro_result(self):
-        ''' Method docstring.'''
-
-        root_path = os.getcwd()
-        results_folder = root_path + "/resources/SimPro-results"
-        result_file = results_folder + "/RR.txt"
-
-        with open(result_file) as f:
-            for line in f:
-                pass
-
-        # Removing "\n" in the end of line.
-        line = line.rstrip()
-        # Putting the values into a list.
-        line = line.split("\t")
-        # Converting all values to int, because split turn them to string.
-        line = [float(value) for value in line]
-
-        return line
-
-
+    '''
+''' DEPRECATED
 def main():
-    ''' Method docstring.'''
 
     # Método de escalonamento ("FCFS", "RR"...).
     escalonador = None
@@ -133,3 +109,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''

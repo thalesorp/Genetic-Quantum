@@ -230,8 +230,8 @@ class Evento():
             # Assim, ao fim da execeução da CPU, o processo deve voltar para a fila de prontos.
             # Caso o burst encerre, se inicia uma execução IO. TODO: Ver como implementar isso.
 
-            flag = processo.subQuantum() #reduz burst (True = Reduziu burst) (False = Decrementou)                      # Chamou aqui.
-            if flag:
+            #reduz burst (True = Reduziu burst) (False = Decrementou)                      # Chamou aqui.
+            if processo.subQuantum():
                 #processo volta para a fila de prontos
                 self.filaDeProntos.insert(processo)
                 #Existe processo aguardando execucao?
@@ -471,7 +471,11 @@ class Evento():
         if cont != 0:
             esperaExtra = esperaExtra/cont
 
+        if self.modelo == 'D':
+            self.tempoSimulacao = tempo
+
         execucaoCPus = 0
+
         for cpu in self.colecao.CPUs:
             execucaoCPus += (self.tempoSimulacao - cpu.getTotalOciosidade())
         if self.throughput == 0:
@@ -485,37 +489,25 @@ class Evento():
             usamcpu = ((execucaoCPus/len(self.colecao.CPUs))/tempo)*100
             tespera = (self.esperaTotal/self.throughput) + esperaExtra
 
-        # Cria a pasta com o nome do arquivo.
-        nomeCenario = str(self.arquivo)
-        pasta = 'Resultados ' + nomeCenario[9:-4]
+        # Output the results
 
-        #-----
-        path = os.getcwd()
-        #directories_up = 3
-        #for _ in range(directories_up):
-            #path=path[:path.rfind('/')]
-        pasta = path + "/resources/SimPro-results"
-        #print("pasta:", pasta)
-        #-----
 
-        if not os.path.exists(pasta):
-            os.makedirs(pasta)
-        ########
+        root_path = os.getcwd()
+        results_folder = root_path + "\\resources\\SimPro-results\\"
+        if not os.path.exists(results_folder):
+            os.makedirs(results_folder)
 
-        nome = str(pasta + '/' + self.escalonador.nome + '.txt')
-        file = open(nome, 'a')
+        # Slicing the file name to get the scenario name
+        scenario_name = str(self.arquivo).rsplit('/', 1)[1].rsplit('.', 1)[0]
+
+
+        result_file_name = results_folder + scenario_name + "_results.txt"
+
+        file = open(result_file_name, 'a')
 
         text = ""
-        if os.stat(nome).st_size == 0:
+        if os.stat(result_file_name).st_size == 0:
             text = 'THROUGHPUT\tTURNAROUND\tUTILIZACAO\tESPERA\n'
-        text += str(float(tput))
-        text += '\t'
-        text += str(taround)
-        text += '\t'
-        text += str(usamcpu)
-        text += '\t'
-        text += str(tespera)
-        text += '\n'
-
+        text += str(float(tput)) + '\t' + str(taround) + '\t' + str(usamcpu) + '\t' + str(tespera) + '\n'
         file.write(text)
         file.close()
