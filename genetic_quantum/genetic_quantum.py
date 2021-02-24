@@ -29,6 +29,7 @@ import random
 import imageio
 import os
 import datetime
+import time
 
 class GeneticQantum(NSGA2):
     '''Main class of this project.'''
@@ -255,7 +256,6 @@ class GeneticQantum(NSGA2):
 
         return self.colors[self.color_counter]
 
-import time
 start_time = time.time()
 GeneticQantum().run()
 #GeneticQantum().round_robin(1000, True)

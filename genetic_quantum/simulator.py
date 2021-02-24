@@ -43,7 +43,7 @@ class Simulator():
         process_index = -1
         process_index = self.get_next_process_index(process_index)
 
-        while process_index != None:
+        while process_index is not None:
             if self.DEBUG == True: print("\ncurrent_time:", current_time)
 
             context_switch += 1
@@ -106,7 +106,6 @@ class Simulator():
                 process = Process(int(line[1]), int(line[2]), int(line[3]))
                 self.processes.append(process)
                 self.process_quantity += 1
-
 
     def get_next_process_index(self, last_process_id):
         '''Return the next READY process in the processes list.

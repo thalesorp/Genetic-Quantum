@@ -34,8 +34,9 @@ class Process():
         self.state = "R"
 
     def consume_time_unit(self):
-        '''Decreases one quantum from process burst time.
+        '''Decreases one time unit from process remaining burst time.
         When there's no more remaining burst, change state to TERMINATED.'''
+
         self.remaining_burst -= 1
         if self.remaining_burst == 0:
             self.state = "T"
