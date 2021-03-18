@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
 ################################################################################
@@ -22,9 +23,9 @@ class Simulator():
 
     def __init__(self, scenario, debug=None):
         if debug:
-            self.DEBUG = debug
+            self.debug = debug
         else:
-            self.DEBUG = False
+            self.debug = False
 
         self.scenario = scenario
         self.processes = list()
@@ -44,7 +45,7 @@ class Simulator():
         process_index = self.get_next_process_index(process_index)
 
         while process_index is not None:
-            if self.DEBUG == True: print("\ncurrent_time:", current_time)
+            if self.debug == True: print("\ncurrent_time:", current_time)
 
             context_switch += 1
 
@@ -63,11 +64,11 @@ class Simulator():
             # Incrementing the waiting time of all other processes that are waiting right now.
             self.increment_waiting_time(others_waiting_time, process_index)
 
-            if self.DEBUG == True: print(self.processes[process_index])
+            if self.debug == True: print(self.processes[process_index])
 
             process_index = self.get_next_process_index(process_index)
 
-        if self.DEBUG == True: print("\ncurrent_time:", current_time, "\nEnd of simulation.")
+        if self.debug == True: print("\ncurrent_time:", current_time, "\nEnd of simulation.")
 
         total_turnaround_time = 0
         total_waiting_time = 0
@@ -78,16 +79,20 @@ class Simulator():
             process.turnaround_time = process.exit_time - process.arrival_time
             total_turnaround_time += process.turnaround_time
             total_waiting_time += process.waiting_time
-            if self.DEBUG == True: print(process)
+            if self.debug == True: print(process)
 
         avg_turnaround_time = total_turnaround_time / self.process_quantity
         avg_waiting_time = total_waiting_time / self.process_quantity
 
-        if self.DEBUG == True: print("avg_turnaround_time:", avg_turnaround_time)
-        if self.DEBUG == True: print("avg_waiting_time:", avg_waiting_time)
-        if self.DEBUG == True: print("context_switch:", context_switch)
+        # Reseting the processes for the possible next simulation.
+        self.reset_processes()
+
+        if self.debug == True: print("avg_turnaround_time:", avg_turnaround_time)
+        if self.debug == True: print("avg_waiting_time:", avg_waiting_time)
+        if self.debug == True: print("context_switch:", context_switch)
 
         resulting_metrics = list([avg_turnaround_time, avg_waiting_time, context_switch])
+        #resulting_metrics = list([avg_turnaround_time, avg_waiting_time])
         return resulting_metrics
 
     def get_processes(self):
@@ -102,10 +107,16 @@ class Simulator():
             line = line.split(' ')
 
             if line[0] == 'P':
-                # P [identifier] [arrival time] [burst time] [priority]
+                # P [identifier] [arrival time] [burst time]
                 process = Process(int(line[1]), int(line[2]), int(line[3]))
                 self.processes.append(process)
                 self.process_quantity += 1
+
+    def reset_processes(self):
+        ''' Reset the values inserted in each process of current scenario.'''
+
+        for process in self.processes:
+            process.reset()
 
     def get_next_process_index(self, last_process_id):
         '''Return the next READY process in the processes list.
@@ -131,3 +142,20 @@ class Simulator():
             if process.identifier != self.processes[current_process_index].identifier:
                 if process.state == "R":
                     process.waiting_time += time
+
+    def worst_metrics(self):
+        ''' Return the worst metrics. This is used as reference point in the
+        hypervolume indicator calculation'''
+
+        burst_summation = 0
+        for process in self.processes:
+            burst_summation += process.burst_time
+
+        highest_burst = 0
+        for process in self.processes:
+            if process.burst_time > highest_burst:
+                highest_burst = process.burst_time
+
+        # [worst turaround time, worst waiting time, worst context switches]
+        return [burst_summation, highest_burst, burst_summation]
+

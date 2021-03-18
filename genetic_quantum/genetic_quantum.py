@@ -13,11 +13,11 @@
 #                                                                              #
 ################################################################################
 
-'''Root file of this project.'''
+'''Root file of this project'''
 
 from libraries.nsga2.nsga2 import NSGA2
 from libraries.nsga2.individual import Individual
-from libraries.simpro.simpro import SimPro
+# from libraries.simpro.simpro import SimPro
 
 from simulator import Simulator
 
@@ -30,20 +30,20 @@ import imageio
 import os
 import datetime
 import time
+import sys
+import subprocess
+import statistics
+from pathlib import Path
 
 class GeneticQantum(NSGA2):
-    '''Main class of this project.'''
+    '''Main class of this project'''
 
-    # "ZDT1", "ZDT2", "ZDT3" or "GQ".
+    # "ZDT1", "ZDT2", "ZDT3" or "GQ"
     TEST_PROBLEM = "GQ"
 
-    #SCENARIO = "resources/scenarios/Dataset-0_Case-0.txt"
-    SCENARIO = "resources/scenarios/Dataset-1_Case-1.txt"
-    #SCENARIO = "resources/scenarios/Dataset-2_Case-1.txt"
-
-    def __init__(self):
-        # Calling the parent constructor.
-        super().__init__()
+    def __init__(self, scenario, generations, population_size, genome_min_value, genome_max_value, crossover_constant, crossover_rate):
+        # Calling the parent constructor
+        super().__init__(generations, population_size, genome_min_value, genome_max_value, crossover_constant, crossover_rate)
 
         self.PLOTS_FOLDER = "resources/" + self.TEST_PROBLEM + "-plots/"
         self.FILE_PREFIX = "Img_"
@@ -52,41 +52,71 @@ class GeneticQantum(NSGA2):
         self.color_counter = -1
         self.colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko']
 
+        self.SCENARIO = scenario
+
         self.simulator = Simulator(self.SCENARIO)
 
-    # NSGA-II.
+        self.nsga2_results_folder = "resources/nsga2-results/"
+        Path(self.nsga2_results_folder).mkdir(parents=True, exist_ok=True)
+
+        self.hypervolume_lib_folder = "libraries/hypervolume/"
+        Path(self.hypervolume_lib_folder).mkdir(parents=True, exist_ok=True)
+
+        self.front_file_name = "best_front.txt"
+
+    def run(self):
+        start_time = time.time()
+        best_front = super().run()
+        runtime = time.time() - start_time
+
+        #sys.stderr.write("AAA")
+
+        output = ""
+        for individual in best_front.individuals:
+            output += str(individual.name) + " "
+            output += str(individual.genome[0]) + " "
+            output += str(individual.solutions[0]) + " "
+            output += str(individual.solutions[1]) + " "
+            output += str(individual.solutions[2]) + " "
+            output += str(individual.rank) + " "
+            output += str(individual.crowding_distance) + "\n"
+
+        print(output)
+
+    # NSGA-II
     def evaluate(self, population):
-        '''How the individuals are evaluated.'''
+        '''How the individuals are evaluated'''
 
         if self.TEST_PROBLEM.upper() == "GQ":
             for individual in population.individuals:
-                # Evaluating only the individuals that doesn't have been evaluated before.
+                # Evaluating only the individuals that doesn't have been evaluated before
                 if not individual.solutions:
                     quantum = individual.genome[0]
 
+                    #solutions = [avg_turnaround_time, avg_waiting_time, context_switch]
                     solutions = self.simulator.run(quantum)
-                    individual.solutions = solutions
                     #print("Evaluation -> " + str(solutions) + " " + "Q=" + str(quantum))
+                    individual.solutions = solutions
 
         if self.TEST_PROBLEM.upper() == "ZDT1":
             for individual in population.individuals:
-                # Evaluating only the individuals that doesn't have been evaluated before.
+                # Evaluating only the individuals that doesn't have been evaluated before
                 if not individual.solutions:
                     individual.solutions = self.zdt1(individual.genome)
 
         if self.TEST_PROBLEM.upper() == "ZDT2":
             for individual in population.individuals:
-                # Evaluating only the individuals that doesn't have been evaluated before.
+                # Evaluating only the individuals that doesn't have been evaluated before
                 if not individual.solutions:
                     individual.solutions = self.zdt2(individual.genome)
 
         if self.TEST_PROBLEM.upper() == "ZDT3":
             for individual in population.individuals:
-                # Evaluating only the individuals that doesn't have been evaluated before.
+                # Evaluating only the individuals that doesn't have been evaluated before
                 if not individual.solutions:
                     individual.solutions = self.zdt3(individual.genome)
 
-    # Fitness function.
+    # Fitness function
     def zdt1(self, x):
         n = len(x)
 
@@ -123,18 +153,7 @@ class GeneticQantum(NSGA2):
 
         return [f1, f2]
 
-    # Plotting.
-    def _generate_results(self):
-
-        # TODO: remove this!
-        foo = 1
-
-        # Adding the date and time to the results file.
-        #self._rename_result_file()
-
-        # Generate the final gif with the plots of each generation.
-        #self._generate_gif()
-
+    # Plotting
     def _save_plot(self, file_number, fronts):
 
         file_name = self.PLOTS_FOLDER + self.FILE_PREFIX + str(file_number) + self.FILE_FORMAT
@@ -219,7 +238,7 @@ class GeneticQantum(NSGA2):
         plt.close()
 
     def _rename_result_file(self):
-        '''Adding the date and time to the results file.'''
+        '''Adding the date and time to the results file'''
 
         root_path = os.getcwd()
         results_folder = root_path + "\\resources\\SimPro-results\\"
@@ -247,7 +266,7 @@ class GeneticQantum(NSGA2):
         imageio.mimsave(self.PLOTS_FOLDER + self.FILE_PREFIX + '0.gif', images, duration=0.6)
 
     def _next_color(self):
-        '''Return next color for plotting.'''
+        '''Return next color for plotting'''
 
         self.color_counter += 1
 
@@ -256,7 +275,115 @@ class GeneticQantum(NSGA2):
 
         return self.colors[self.color_counter]
 
-start_time = time.time()
-GeneticQantum().run()
-#GeneticQantum().round_robin(1000, True)
-print("--- %s seconds ---" % (time.time() - start_time))
+    # Hypervolume indicator
+    def create_front_file(self, best_front, reference_point):
+        '''Putting the best front into the format of hypervolume calculation input'''
+
+        with open(self.hypervolume_lib_folder + self.front_file_name, "w") as file_:
+            file_.write("{\"objective\":" + str([1] * len(reference_point)) + "}\n")
+
+            objectives = "["
+            for individual in best_front.individuals:
+                objectives += "{\"objective\":" + str(individual.solutions) + "}, "
+            objectives = objectives[:-2] + "]\n"
+
+            file_.write(objectives)
+
+    def hypervolume(self, reference_point):
+        '''Calling the hypervolume indicator algorithm'''
+
+        py3_call = "python3 -W ignore " + self.hypervolume_lib_folder + "hv.py -q -r '" + str(reference_point) + "' < " + self.hypervolume_lib_folder + self.front_file_name
+
+        # Stripping unecessary characters to get only the float value of hypervolume indicator
+        return float(str(subprocess.check_output(py3_call, shell=True))[12:-4])
+
+    def mean_metrics(self, front):
+        '''Return the mean of each metric of front'''
+
+        metrics_quantity = len(front.individuals[0].solutions)
+        metrics = list()
+        for _ in range(metrics_quantity):
+            metrics.append([])
+
+        for individual in front.individuals:
+            for i in range(len(individual.solutions)):
+                metrics[i].append(individual.solutions[i])
+
+        for i in range(len(metrics)):
+            metrics[i] = statistics.mean(metrics[i])
+
+        return metrics
+
+        '''
+        metrics_quantity = len(front.individuals[0].solutions)
+        metrics = metrics_quantity * [list()]
+        #metrics = [[], [], []]
+
+        print("\nmetrics:", metrics)
+
+        for individual in front.individuals:
+            print("")
+            for i in range(len(individual.solutions)):
+                print("i =", i)
+                print("individual.solutions[" + str(i) + "]:", individual.solutions[i])
+                metrics[i].append(individual.solutions[i])
+                print("metrics[" + str(i) + "]:", metrics[i])
+
+        print("metrics:", metrics)
+
+        for i in range(len(metrics)):
+            metrics[i] = statistics.mean(metrics[i])
+
+        print("metrics:", metrics)
+        input()
+        return metrics
+        '''
+
+        '''
+        metrics_quantity = len(front.individuals[0].solutions)
+        mean_metrics = metrics_quantity * [0]
+
+        for individual in front.individuals:
+            for i in range(len(individual.solutions)):
+                mean_metrics[i] += individual.solutions[i]
+
+        for i in range(len(mean_metrics)):
+            mean_metrics[i] = mean_metrics[i]/len(front.individuals)
+
+        return mean_metrics
+        '''
+
+    # NSGA-II results file
+    def _generate_results(self, front):
+        '''Create a file and insert the resulting data'''
+
+        now = datetime.datetime.now()
+        results_file_name = str(self.nsga2_results_folder + now.strftime('%Y-%m-%d_%H-%M-%S') + "_nsga2-results" + '.txt')
+
+        output = "# [NAME] [QUANTUM] [TURNAROUND TIME] [WAITING TIME] [CONTEXT SWITCHES] [NONDOMINATED RANK] [CROWDING DISTANCE]\n"
+        for individual in front.individuals:
+            output += str(individual.name) + " "
+            output += str(individual.genome[0]) + " "
+            output += str(individual.solutions[0]) + " "
+            output += str(individual.solutions[1]) + " "
+            output += str(individual.solutions[2]) + " "
+            output += str(individual.rank) + " "
+            output += str(individual.crowding_distance) + "\n"
+
+        with open(results_file_name, "w") as file_:
+            file_.write(output)
+
+
+################################################################################
+# Input via command line arguments
+
+scenario = sys.argv[1]
+generations = int(sys.argv[2])
+population_size = int(sys.argv[3])
+genome_min_value = int(sys.argv[4])
+genome_max_value = int(sys.argv[5])
+crossover_constant = int(sys.argv[6])
+crossover_rate = float(sys.argv[7])
+
+gq = GeneticQantum(scenario, generations, population_size, genome_min_value, genome_max_value, crossover_constant, crossover_rate)
+gq.run()

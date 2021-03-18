@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 
 ################################################################################
@@ -13,17 +14,17 @@
 #                                                                              #
 ################################################################################
 
-'''File of process class used by simulator class on simulator file.'''
+'''File of process class used by simulator class on simulator file'''
 
 class Process():
-    '''Process class.'''
+    '''Process class'''
 
     def __init__(self, identifier=None, arrival_time=None, burst_time=None):
         self.identifier = identifier
         self.arrival_time = arrival_time
         self.burst_time = burst_time
 
-        self.remaining_burst = burst_time
+        self.remaining_burst = self.burst_time
 
         self.exit_time = 0
 
@@ -34,12 +35,21 @@ class Process():
         self.state = "R"
 
     def consume_time_unit(self):
-        '''Decreases one time unit from process remaining burst time.
-        When there's no more remaining burst, change state to TERMINATED.'''
+        '''Decreases one time unit from process remaining burst time
+        When there's no more remaining burst, change state to TERMINATED'''
 
         self.remaining_burst -= 1
         if self.remaining_burst == 0:
             self.state = "T"
+
+    def reset(self):
+        '''Reset the process values so it can be used in the simulation'''
+
+        self.remaining_burst = self.burst_time
+        self.exit_time = 0
+        self.turnaround_time = 0
+        self.waiting_time = 0
+        self.state = "R"
 
     def __str__(self):
         result = ("id=" + str(self.identifier)

@@ -63,18 +63,14 @@ class Individual():
         return (first_half and second_half)
 
     def __str__(self):
-        name_tab = "\t"
-        if len(self.name) > 4:
-            name_tab = "\t\t"
-        result = (self.name
-                + name_tab + self.__str_genome__()
-                + "\t" + self.__str_solutions__()
-                + "\tRank:" + str(self.rank)
-                + "\tC.D.:" + self.__str_crowding_distance__()
-                #+ "\tDom.count:" + str(self.domination_count)
-                #+ "\tDom.by:" + self.__str_dominated_by__()
+        return (self.name
+                + " " +  self.__str_genome__()
+                + " " + self.__str_solutions__()
+                + " " + str(self.rank)
+                + " " + self.__str_crowding_distance__()
+                #+ " " + str(self.domination_count)
+                #+ " " + self.__str_dominated_by__()
                 )
-        return result
 
     def __str_genome__(self):
         if not self.genome:
@@ -94,13 +90,13 @@ class Individual():
 
     def __str_solutions__(self):
         if not self.solutions:
-            return "()"
+            return "[]"
 
-        result = "("
+        result = "["
 
         for i in range(len(self.solutions)-1):
             result += '%.2f'%(self.solutions[i]) + ", "
-        result += '%.2f'%(self.solutions[i+1]) + ")"
+        result += '%.2f'%(self.solutions[i+1]) + "]"
 
         return result
 

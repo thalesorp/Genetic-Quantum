@@ -23,6 +23,9 @@ from .individual import Individual
 class Population():
     '''Class of population of indiviuals, used by NSGA-II.'''
 
+    # "I" for integers and "R" for real values
+    RANDOM_TYPE = "R"
+
     def __init__(self, genotype_quantity, genome_min_value, genome_max_value):
         random.seed()
 
@@ -43,7 +46,10 @@ class Population():
             genome = list()
 
             for _ in range(self.genotype_quantity):
-                genotype = random.uniform(self.genome_min_value, self.genome_max_value)
+                if self.RANDOM_TYPE == "R":
+                    genotype = random.uniform(self.genome_min_value, self.genome_max_value)
+                if self.RANDOM_TYPE == "I":
+                    genotype = random.randrange(self.genome_min_value, self.genome_max_value + 1)
                 genome.append(genotype)
 
             self.new_individual(genome)
