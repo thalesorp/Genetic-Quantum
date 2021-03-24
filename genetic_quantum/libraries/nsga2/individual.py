@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
+#
+# Genetic quantum
+# An adaptive process scheduler based on Round-robin and optmized with NSGA-II
+#
+# Instituto Federal de Minas Gerais - Campus Formiga, Brazil
+#
+# Version 1.0
+# (c) 2021 Thales Pinto <ThalesORP@gmail.com> under the GPL
+#          http://www.gnu.org/copyleft/gpl.html
+#
 
-################################################################################
-#                                                                              #
-#  Genetic quantum:                                                            #
-#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
-#                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga                          #
-#  Brazil, 2021                                                                #
-#                                                                              #
-#  Author: Thales Otávio                                                       #
-#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
-#                                                                              #
-################################################################################
-
-'''File of individual class.'''
+'''File of individual class'''
 
 class Individual():
-    '''Individuals calss of the population in NSGA-II.'''
+    '''Individuals calss of the population in NSGA-II'''
 
     id = 1
 
@@ -25,16 +22,19 @@ class Individual():
         self.name = "i~" + str(Individual.id)
         Individual.id += 1
 
-        # List of genotypes.
+        # List of genotypes
         self.genome = genome
 
-        # List of solutions.
+        # List of solutions
         self.solutions = list()
 
-        # Quantity of individuals which dominate this individual.
+        # List of solutions not normalized by the evaluate method
+        self.non_normalized_solutions = list()
+
+        # Quantity of individuals which dominate this individual
         self.domination_count = 0
 
-        # List of individuals that are dominated by this individual.
+        # List of individuals that are dominated by this individual
         self.dominated_by = list()
 
         self.rank = None
@@ -42,7 +42,7 @@ class Individual():
         self.crowding_distance = None
 
     def dominates(self, individual):
-        '''Function that tells if the actual individual dominates another.
+        '''Function that tells if the actual individual dominates another
 
         A(x1, y1) dominates B(x2, y2) when:
             (x1 <= x2 and y1 <= y2) and (x1 < x2 or y1 < y2)

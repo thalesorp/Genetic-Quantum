@@ -1,25 +1,19 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
+#
+# Genetic quantum
+# An adaptive process scheduler based on Round-robin and optmized with NSGA-II
+#
+# Instituto Federal de Minas Gerais - Campus Formiga, Brazil
+#
+# Version 1.0
+# (c) 2021 Thales Pinto <ThalesORP@gmail.com> under the GPL
+#          http://www.gnu.org/copyleft/gpl.html
+#
 
-################################################################################
-#                                                                              #
-#  Genetic quantum:                                                            #
-#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
-#                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga                          #
-#  Brazil, 2021                                                                #
-#                                                                              #
-#  Author: Thales Otávio                                                       #
-#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
-#                                                                              #
-################################################################################
+'''File of Round Robin simulator class'''
 
-'''File of Round Robin simulator class.'''
-
-from process import Process
-
-class Simulator():
-    '''Round Robin scheduling simulator.'''
+class RoundRobinScheduler():
+    '''Round Robin scheduling simulator'''
 
     def __init__(self, scenario, debug=None):
         if debug:
@@ -33,7 +27,7 @@ class Simulator():
         self.get_processes()
 
     def run(self, quantum):
-        '''Simulate the round robin scheduling.'''
+        '''Simulate the round robin scheduling'''
 
         # Resulting metrics
         avg_turnaround_time = None
@@ -58,10 +52,10 @@ class Simulator():
                 remaining_time -= 1
                 others_waiting_time += 1
 
-            # Storing the current time as exit time.
+            # Storing the current time as exit time
             self.processes[process_index].exit_time = current_time
 
-            # Incrementing the waiting time of all other processes that are waiting right now.
+            # Incrementing the waiting time of all other processes that are waiting right now
             self.increment_waiting_time(others_waiting_time, process_index)
 
             if self.debug == True: print(self.processes[process_index])
@@ -73,8 +67,8 @@ class Simulator():
         total_turnaround_time = 0
         total_waiting_time = 0
 
-        # Calculating the turnaround time of each process and the average.
-        # Also, calculating the average waiting time.
+        # Calculating the turnaround time of each process and the average
+        # Also, calculating the average waiting time
         for process in self.processes:
             process.turnaround_time = process.exit_time - process.arrival_time
             total_turnaround_time += process.turnaround_time
@@ -84,7 +78,7 @@ class Simulator():
         avg_turnaround_time = total_turnaround_time / self.process_quantity
         avg_waiting_time = total_waiting_time / self.process_quantity
 
-        # Reseting the processes for the possible next simulation.
+        # Reseting the processes for the possible next simulation
         self.reset_processes()
 
         if self.debug == True: print("avg_turnaround_time:", avg_turnaround_time)
@@ -96,6 +90,8 @@ class Simulator():
         return resulting_metrics
 
     def get_processes(self):
+        '''Get processes data from scenario file'''
+
         scenario_file = open(self.scenario, 'r')
         lines = scenario_file.readlines()
 
@@ -113,14 +109,14 @@ class Simulator():
                 self.process_quantity += 1
 
     def reset_processes(self):
-        ''' Reset the values inserted in each process of current scenario.'''
+        ''' Reset the values inserted in each process of current scenario'''
 
         for process in self.processes:
             process.reset()
 
     def get_next_process_index(self, last_process_id):
-        '''Return the next READY process in the processes list.
-        Return None when there's no avaliable READY process.'''
+        '''Return the next READY process in the processes list
+        Return None when there's no avaliable READY process'''
 
         process_quantity = self.process_quantity
 
@@ -135,8 +131,8 @@ class Simulator():
         return None
 
     def increment_waiting_time(self, time, current_process_index):
-        '''Increment the "time" value to all READY process wainting time.
-        The process with id equals to "current_process_index" is ignored.'''
+        '''Increment the "time" value to all READY process wainting time
+        The process with id equals to "current_process_index" is ignored'''
 
         for process in self.processes:
             if process.identifier != self.processes[current_process_index].identifier:
@@ -159,3 +155,47 @@ class Simulator():
         # [worst turaround time, worst waiting time, worst context switches]
         return [burst_summation, highest_burst, burst_summation]
 
+class Process():
+    '''Process class; used by Round Robin scheduling simulator'''
+
+    def __init__(self, identifier=None, arrival_time=None, burst_time=None):
+        self.identifier = identifier
+        self.arrival_time = arrival_time
+        self.burst_time = burst_time
+
+        self.remaining_burst = self.burst_time
+
+        self.exit_time = 0
+
+        self.turnaround_time = 0
+        self.waiting_time = 0
+
+        # READY or TERMINATED (R or T)
+        self.state = "R"
+
+    def consume_time_unit(self):
+        '''Decreases one time unit from process remaining burst time
+        When there's no more remaining burst, change state to TERMINATED'''
+
+        self.remaining_burst -= 1
+        if self.remaining_burst == 0:
+            self.state = "T"
+
+    def reset(self):
+        '''Reset the process values so it can be used in the simulation'''
+
+        self.remaining_burst = self.burst_time
+        self.exit_time = 0
+        self.turnaround_time = 0
+        self.waiting_time = 0
+        self.state = "R"
+
+    def __str__(self):
+        result = ("id=" + str(self.identifier)
+                + "  arrival=" + str(self.arrival_time)
+                + "  burst=" + str(self.burst_time)
+                + "  remaining_burst=" + str(self.remaining_burst)
+                + "  turnaround_time=" + str(self.turnaround_time)
+                + "  waiting_time=" + str(self.waiting_time)
+                + "  state=" + str(self.state))
+        return result

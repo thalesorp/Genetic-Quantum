@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
+#
+# Genetic quantum
+# An adaptive process scheduler based on Round-robin and optmized with NSGA-II
+#
+# Instituto Federal de Minas Gerais - Campus Formiga, Brazil
+#
+# Version 1.0
+# (c) 2021 Thales Pinto <ThalesORP@gmail.com> under the GPL
+#          http://www.gnu.org/copyleft/gpl.html
+#
 
-################################################################################
-#                                                                              #
-#  Genetic quantum:                                                            #
-#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
-#                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga                          #
-#  Brazil, 2021                                                                #
-#                                                                              #
-#  Author: Thales Otávio                                                       #
-#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
-#                                                                              #
-################################################################################
-
-'''File of population class.'''
+'''File of population class'''
 
 import sys
 import random
@@ -21,7 +18,7 @@ import random
 from .individual import Individual
 
 class Population():
-    '''Class of population of indiviuals, used by NSGA-II.'''
+    '''Class of population of indiviuals, used by NSGA-II'''
 
     # "I" for integers and "R" for real values
     RANDOM_TYPE = "R"
@@ -29,7 +26,7 @@ class Population():
     def __init__(self, genotype_quantity, genome_min_value, genome_max_value):
         random.seed()
 
-        # Size of genome list.
+        # Size of genome list
         self.genotype_quantity = genotype_quantity
 
         self.genome_min_value = genome_min_value
@@ -40,7 +37,7 @@ class Population():
         self.individuals = list()
 
     def initiate(self, n_individuals):
-        '''Initialize a new population.'''
+        '''Initialize a new population'''
 
         for _ in range(n_individuals):
             genome = list()
@@ -55,31 +52,31 @@ class Population():
             self.new_individual(genome)
 
     def new_individual(self, genome):
-        '''Create a new individual with "genome" and insert into population.'''
+        '''Create a new individual with "genome" and insert into population'''
 
         self.insert(Individual(genome))
 
     def insert(self, individual):
-        '''Insert a new individual into population.'''
+        '''Insert a new individual into population'''
 
         self.individuals.append(individual)
         self.size += 1
 
     def delete_individual(self, individual):
-        '''Delete "individual" from population.'''
+        '''Delete "individual" from population'''
 
         self.individuals.remove(individual)
         self.size -= 1
 
     def union(self, population):
-        '''Union operation over "population" and current population.'''
+        '''Union operation over "population" and current population'''
 
         for individual in population.individuals:
             self.insert(individual)
 
-    # Front utils.
+    # Front utils
     def reset_fronts(self):
-        '''Delete all fronts and prepare the population to be sorted in fronts.'''
+        '''Delete all fronts and prepare the population to be sorted in fronts'''
 
         for individual in self.individuals:
             individual.domination_count = 0
@@ -88,41 +85,41 @@ class Population():
         self.fronts = list()
 
     def new_front(self):
-        '''Start a new front.'''
+        '''Start a new front'''
 
         self.fronts.append([])
 
     def get_random_individual(self):
-        '''Return a random individual of this population.'''
+        '''Return a random individual of this population'''
 
         index = random.randint(0, self.size-1)
 
         return self.individuals[index]
 
     def add_to_front(self, index, individual):
-        '''Add the individual into "index" front.'''
+        '''Add the individual into "index" front'''
 
         self.fronts[index].append(individual)
 
     def get_last_front_index(self):
-        '''Retun the index of last front.'''
+        '''Retun the index of last front'''
 
         return len(self.fronts)-1
 
     def add_to_last_front(self, individual):
-        '''Add individual to last front.'''
+        '''Add individual to last front'''
 
         self.fronts[self.get_last_front_index()].append(individual)
 
     def get_last_front(self):
-        '''Return the last front.'''
+        '''Return the last front'''
 
         return self.fronts[len(self.fronts)-1]
 
     def delete_individual_from_last_front(self, individual):
-        '''Deletes the individual from front AND from individuals list.'''
+        '''Deletes the individual from front AND from individuals list'''
 
-        # Deleting from last front the individual with index = "index".
+        # Deleting from last front the individual with index = "index"
         last_front = self.get_last_front()
         index = last_front.index(individual)
         del last_front[index]
@@ -130,7 +127,7 @@ class Population():
         self.delete_individual(individual)
 
     def delete_last_front(self):
-        '''Deleting the last front and the individuals inside.'''
+        '''Deleting the last front and the individuals inside'''
 
         last_front = self.get_last_front()
 
@@ -139,9 +136,9 @@ class Population():
 
         self.fronts.remove(last_front)
 
-    # Crowding Distance utils.
+    # Crowding Distance utils
     def get_neighbour(self, individual_genome, front_index, genome_index):
-        '''Return the left and right neighbour values of "individual_genome".'''
+        '''Return the left and right neighbour values of "individual_genome"'''
 
         genome_list = list()
 
@@ -152,13 +149,13 @@ class Population():
 
         individual_genome_index = genome_list.index(individual_genome)
 
-        # Usually, the value is as described bellow.
+        # Usually, the value is as described bellow
         left_neighbour_index = individual_genome_index - 1
         right_neighbour_index = individual_genome_index + 1
 
-        # But when isn't, then it's checked the cases when there's no neighbour on one side.
+        # But when isn't, then it's checked the cases when there's no neighbour on one side
         if individual_genome_index == 0:
-            # When it happens, the closest neighbour it's himself.
+            # When it happens, the closest neighbour it's himself
             left_neighbour_index = 0
         if individual_genome_index == (len(genome_list)-1):
             right_neighbour_index = (len(genome_list)-1)
@@ -167,7 +164,7 @@ class Population():
         return genome_list[left_neighbour_index], genome_list[right_neighbour_index]
 
     def get_extreme_neighbours(self, genome_index):
-        '''Return the highest and lowest neighbour values of "individual_genome".'''
+        '''Return the highest and lowest neighbour values of "individual_genome"'''
 
         genome_list = list()
 
@@ -176,9 +173,9 @@ class Population():
 
         return min(genome_list), max(genome_list)
 
-    # Utils.
+    # Utils
     def _show_individuals(self):
-        '''Show the values of each individual of population.'''
+        '''Show the values of each individual of population'''
 
         result = "INDIVIDUALS:\n"
         i = 1
@@ -189,7 +186,7 @@ class Population():
         print(result)
 
     def _show_front(self, front_index):
-        '''Show only front with "front_index".'''
+        '''Show only front with "front_index"'''
 
         result = "FRONT:\n"
         j = 0
@@ -202,7 +199,7 @@ class Population():
         print(result)
 
     def _show_fronts_simple(self):
-        '''Show all fronts.'''
+        '''Show all fronts'''
 
         result = "FRONTS:\n"
 
@@ -221,7 +218,7 @@ class Population():
         print(result)
 
     def _show_general_domination_info(self):
-        '''Show all data of population.'''
+        '''Show all data of population'''
 
         for individual in self.individuals:
             sys.stdout.write("  Individual: " + str(individual)
@@ -233,7 +230,7 @@ class Population():
         print("")
 
     def _show_fronts_with_crowding_distance(self):
-        '''Show all fronts.'''
+        '''Show all fronts'''
 
         i = 1
         for front in self.fronts:

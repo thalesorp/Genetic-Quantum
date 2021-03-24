@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-
-################################################################################
-#                                                                              #
-#  Genetic quantum:                                                            #
-#    Finding a good quantum to Round-robin scheduling with NSGA-II             #
-#                                                                              #
-#  Instituto Federal de Minas Gerais - Campus Formiga                          #
-#  Brazil, 2021                                                                #
-#                                                                              #
-#  Author: Thales Otávio                                                       #
-#  Contact: @ThalesORP | ThalesORP@gmail.com                                   #
-#                                                                              #
-################################################################################
+#
+# Genetic quantum
+# An adaptive process scheduler based on Round-robin and optmized with NSGA-II
+#
+# Instituto Federal de Minas Gerais - Campus Formiga, Brazil
+#
+# Version 1.0
+# (c) 2021 Thales Pinto <ThalesORP@gmail.com> under the GPL
+#          http://www.gnu.org/copyleft/gpl.html
+#
 
 '''Main class of NSGA-II'''
 
@@ -66,6 +63,7 @@ class NSGA2():
 
         # Creating a parent population P0
         self.population.initiate(self.population_size//2)
+
         self.evaluate(self.population)
 
         fronts = self.fast_non_dominated_sort()
@@ -503,4 +501,3 @@ class NSGA2():
                     + context_switches + "\n")
 
         return result
-

@@ -112,7 +112,7 @@ do
     HYPERVOLUME_FRONT_FILE="$FACTORIAL_EXPERIMENT_FOLDER/"$FILES_PREFIX"_results-of-execution-$i-of-"$EXECUTIONS"_normalized_hypervolume-input.txt"
 
     # TODO: Colocar ponto de referência como variável! ################################################################# <- <- <- <- <- <- <- <- <- <- <- <- <- <- <- <- <- <- !!!
-    echo "{\"objective\":[0, 0, 0]}" > $HYPERVOLUME_FRONT_FILE
+    echo "{\"objective\":[1, 1, 1]}" > $HYPERVOLUME_FRONT_FILE
     echo -n "[" >> $HYPERVOLUME_FRONT_FILE
 
     cat $NORMALIZED_FILE | awk '{if ($1 != "#" && $1 != "") {print "{\"objective\":["$3", "$4", "$5"]}, "}}' > ${HYPERVOLUME_FRONT_FILE}.tmp
@@ -123,7 +123,7 @@ do
 
     rm ${HYPERVOLUME_FRONT_FILE}.tmp
 
-    HYPERVOLUME=$(python3 -W ignore libraries/hypervolume/hv.py -q < $HYPERVOLUME_FRONT_FILE)
+    HYPERVOLUME=$(python3 -W ignore libraries/hypervolume/hv.py -q -r '[1, 1, 1]' < $HYPERVOLUME_FRONT_FILE)
     echo $HYPERVOLUME | sed 's/{"score": //g' | sed 's/}//g' >> $HYPERVOLUMES_FILE
 done
 
