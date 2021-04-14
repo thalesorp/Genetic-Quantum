@@ -1,2 +1,2 @@
 # Genetic-Quantum
-Finding the best quantum to Round-robin scheduling with NSGA-II.
+An adaptive process scheduler based on Round-robin and optimized with NSGA-II
